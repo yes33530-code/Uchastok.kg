@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -135,8 +135,7 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
       })
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('[Kanban] Realtime subscription error:', err ?? status)
-          toast.error('Потеряно соединение с сервером. Обновите страницу.')
+          console.warn('[Kanban] Realtime unavailable:', err ?? status)
         }
       })
     return () => { supabase.removeChannel(channel) }
@@ -144,8 +143,8 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
   }, [])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   )
 
   async function handleCreateStage() {
