@@ -526,7 +526,7 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
                         plotId={plot.id}
                         ownerSharePct={parseFloat(fields.owner_share_pct) || 0}
                         durationMonths={fields.project_duration_months ? parseInt(fields.project_duration_months) : null}
-                        snapshot={snapshot as any}
+                        snapshot={snapshot as Omit<import('@/types/plot').CalculatorSnapshot, 'id' | 'plot_id' | 'updated_at'> | null}
                         userId={userId}
                         dark
                       />

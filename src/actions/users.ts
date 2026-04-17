@@ -46,7 +46,7 @@ export async function revokeUser(targetUserId: string) {
   revalidatePath('/settings')
 }
 
-export async function toggleUserRole(targetUserId: string, newRole: 'admin' | 'member') {
+export async function toggleUserRole(targetUserId: string, newRole: 'admin' | 'member' | 'viewer') {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Не авторизован')

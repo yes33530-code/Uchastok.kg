@@ -41,12 +41,13 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
     setLoading(null)
   }
 
-  async function handleToggleRole(profile: Profile) {
-    const newRole = profile.role === 'admin' ? 'member' : 'admin'
+  async function handleSetRole(profile: Profile, newRole: 'admin' | 'member' | 'viewer') {
+    if (profile.role === newRole) return
     setLoading(profile.id + '_role')
     try {
       await toggleUserRole(profile.id, newRole)
-      toast.success(`${profile.full_name ?? 'Пользователь'} теперь ${newRole === 'admin' ? 'администратор' : 'участник'}`)
+      const label = newRole === 'admin' ? 'администратор' : newRole === 'member' ? 'участник' : 'зритель'
+      toast.success(`${profile.full_name ?? 'Пользователь'} теперь ${label}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Ошибка')
     }
@@ -72,7 +73,7 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
                 loading={loading}
                 onApprove={() => handleApprove(profile)}
                 onRevoke={null}
-                onToggleRole={null}
+                onSetRole={null}
               />
             ))}
           </div>
@@ -96,7 +97,7 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
                 loading={loading}
                 onApprove={null}
                 onRevoke={profile.id !== currentUserId ? () => handleRevoke(profile) : null}
-                onToggleRole={profile.id !== currentUserId ? () => handleToggleRole(profile) : null}
+                onSetRole={profile.id !== currentUserId ? (r) => handleSetRole(profile, r) : null}
               />
             ))}
           </div>
@@ -106,13 +107,19 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
   )
 }
 
-function UserRow({ profile, isMe, loading, onApprove, onRevoke, onToggleRole }: {
+const ROLES: { value: 'admin' | 'member' | 'viewer'; label: string }[] = [
+  { value: 'admin',  label: 'Админ' },
+  { value: 'member', label: 'Участник' },
+  { value: 'viewer', label: 'Зритель' },
+]
+
+function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
   profile: Profile
   isMe: boolean
   loading: string | null
   onApprove: (() => void) | null
   onRevoke: (() => void) | null
-  onToggleRole: (() => void) | null
+  onSetRole: ((role: 'admin' | 'member' | 'viewer') => void) | null
 }) {
   const initials = (profile.full_name ?? '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
 
@@ -153,8 +160,32 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onToggleRole }: 
           </button>
         )}
 
-        {/* Role badge (approved users only) */}
-        {profile.approved && (
+        {/* 3-way role selector (approved users only) */}
+        {profile.approved && onSetRole && (
+          loading === profile.id + '_role' ? (
+            <span className="text-xs text-white/30">...</span>
+          ) : (
+            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+              {ROLES.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => onSetRole(value)}
+                  className="text-xs px-2 py-1 transition-colors"
+                  style={{
+                    backgroundColor: profile.role === value ? 'rgba(99,102,241,0.35)' : 'rgba(0,0,0,0.2)',
+                    color: profile.role === value ? '#a5b4fc' : 'rgba(255,255,255,0.35)',
+                    fontWeight: profile.role === value ? 600 : 400,
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Role badge for own row (can't change own role) */}
+        {profile.approved && isMe && (
           <span
             className="text-xs font-medium px-2 py-0.5 rounded-full"
             style={{
@@ -162,19 +193,8 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onToggleRole }: 
               color: profile.role === 'admin' ? '#a5b4fc' : 'rgba(255,255,255,0.4)',
             }}
           >
-            {profile.role === 'admin' ? 'Админ' : 'Участник'}
+            {ROLES.find(r => r.value === profile.role)?.label ?? profile.role}
           </span>
-        )}
-
-        {/* Toggle role */}
-        {onToggleRole && (
-          <button
-            onClick={onToggleRole}
-            disabled={loading === profile.id + '_role'}
-            className="text-xs text-white/35 hover:text-white/65 underline disabled:opacity-40 transition-colors"
-          >
-            {loading === profile.id + '_role' ? '...' : profile.role === 'admin' ? 'Снять' : 'Сделать админом'}
-          </button>
         )}
 
         {/* Revoke access */}

@@ -24,8 +24,14 @@ export async function getComments(plotId: string): Promise<PlotCommentWithProfil
   return (data ?? []) as PlotCommentWithProfile[]
 }
 
+async function requireMember(supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>, userId: string) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (profile?.role === 'viewer') throw new Error('Зрители не могут оставлять комментарии')
+}
+
 export async function addComment(plotId: string, body: string): Promise<PlotCommentWithProfile> {
   const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   const { data, error } = await supabase
     .from('plot_comments')
     .insert({ plot_id: plotId, body: body.trim(), created_by: user.id })
@@ -38,7 +44,7 @@ export async function addComment(plotId: string, body: string): Promise<PlotComm
     plot_id: plotId,
     actor_id: user.id,
     action_type: 'comment_added',
-    payload: { comment_id: (data as any).id, preview: body.trim().slice(0, 80) },
+    payload: { comment_id: (data as PlotCommentWithProfile).id, preview: body.trim().slice(0, 80) },
   })
 
   return data as PlotCommentWithProfile
@@ -46,6 +52,7 @@ export async function addComment(plotId: string, body: string): Promise<PlotComm
 
 export async function deleteComment(commentId: string, plotId: string): Promise<void> {
   const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   // Fetch body preview before deleting for activity log
   const { data: existing } = await supabase

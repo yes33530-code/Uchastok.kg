@@ -3,10 +3,21 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { runAutomations } from '@/lib/automations/runner'
 
-export async function updateStagePositions(updates: { id: string; position: number }[]) {
+async function getUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
+  return { supabase, user }
+}
+
+async function requireMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (profile?.role === 'viewer') throw new Error('Нет доступа')
+}
+
+export async function updateStagePositions(updates: { id: string; position: number }[]) {
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   await Promise.all(updates.map(({ id, position }) =>
     supabase.from('kanban_stages').update({ position }).eq('id', id)
   ))
@@ -14,27 +25,24 @@ export async function updateStagePositions(updates: { id: string; position: numb
 }
 
 export async function updatePlotPositions(updates: { id: string; position: number }[]) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   await Promise.all(updates.map(({ id, position }) =>
     supabase.from('plots').update({ position }).eq('id', id)
   ))
 }
 
 export async function renameStage(stageId: string, name: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   const { error } = await supabase.from('kanban_stages').update({ name }).eq('id', stageId)
   if (error) throw new Error(error.message)
   revalidatePath('/board')
 }
 
 export async function createStage(name: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   const { data: stages } = await supabase.from('kanban_stages').select('position').order('position', { ascending: false }).limit(1)
   const nextPosition = (stages?.[0]?.position ?? -1) + 1
   const { data, error } = await supabase
@@ -48,9 +56,8 @@ export async function createStage(name: string) {
 }
 
 export async function moveToStage(plotId: string, toStageId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   // Get current stage for audit log
   const { data: plot } = await supabase

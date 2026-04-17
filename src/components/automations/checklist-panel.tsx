@@ -36,7 +36,7 @@ function SingleChecklist({ checklist, userId }: { checklist: PlotChecklist; user
     const newChecked = !items[index].checked
     setLoadingIndex(index)
     try {
-      await updateChecklistItem(checklist.id, index, newChecked, userId)
+      await updateChecklistItem(checklist.id, index, newChecked)
       setItems(prev => prev.map((item, i) =>
         i !== index ? item : {
           ...item,

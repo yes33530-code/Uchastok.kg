@@ -5,6 +5,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   pointerWithin,
@@ -131,13 +132,19 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
           return addPlotToMap(prev, inserted)
         })
       })
-      .subscribe()
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('[Kanban] Realtime subscription error:', err ?? status)
+          toast.error('Потеряно соединение с сервером. Обновите страницу.')
+        }
+      })
     return () => { supabase.removeChannel(channel) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
   )
 
   async function handleCreateStage() {

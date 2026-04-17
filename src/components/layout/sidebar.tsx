@@ -113,7 +113,7 @@ export function Sidebar() {
 
       {/* ── Mobile bottom navigation ── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 safe-area-bottom"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-1 safe-area-bottom"
         style={{ backgroundColor: '#142a50', borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
         {NAV.map(({ href, label, icon: Icon }) => {
@@ -123,7 +123,7 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg transition-colors min-w-0',
+                'flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg transition-colors min-w-0',
                 active ? 'text-white' : 'text-white/40'
               )}
             >
@@ -132,9 +132,18 @@ export function Sidebar() {
             </Link>
           )
         })}
+        <a
+          href="/listings"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-white/40 transition-colors"
+        >
+          <Globe className="w-5 h-5 shrink-0" />
+          <span className="text-[9px] font-medium">Сайт</span>
+        </a>
         <button
           onClick={signOut}
-          className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg text-white/40 transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-white/40 transition-colors"
         >
           <LogOut className="w-5 h-5 shrink-0" />
           <span className="text-[9px] font-medium">Выйти</span>

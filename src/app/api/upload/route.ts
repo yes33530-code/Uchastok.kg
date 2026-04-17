@@ -6,12 +6,19 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role === 'viewer') return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
+
   const formData = await request.formData()
   const file = formData.get('file') as File
   const plotId = formData.get('plotId') as string
 
   if (!file || !plotId) return NextResponse.json({ error: 'Missing file or plotId' }, { status: 400 })
   if (file.size > 50 * 1024 * 1024) return NextResponse.json({ error: 'Файл превышает 50 МБ' }, { status: 400 })
+
+  // Verify the plot exists and is accessible to this user before uploading
+  const { data: plot } = await supabase.from('plots').select('id').eq('id', plotId).single()
+  if (!plot) return NextResponse.json({ error: 'Plot not found' }, { status: 404 })
 
   const ext = file.name.split('.').pop()
   const storagePath = `${plotId}/${crypto.randomUUID()}.${ext}`

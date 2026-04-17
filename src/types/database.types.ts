@@ -11,7 +11,7 @@ export type Database = {
           id: string
           full_name: string | null
           avatar_url: string | null
-          role: 'admin' | 'member'
+          role: 'admin' | 'member' | 'viewer'
           approved: boolean
           created_at: string
         }
@@ -19,14 +19,14 @@ export type Database = {
           id: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: 'admin' | 'member'
+          role?: 'admin' | 'member' | 'viewer'
           approved?: boolean
           created_at?: string
         }
         Update: {
           full_name?: string | null
           avatar_url?: string | null
-          role?: 'admin' | 'member'
+          role?: 'admin' | 'member' | 'viewer'
           approved?: boolean
         }
         Relationships: []

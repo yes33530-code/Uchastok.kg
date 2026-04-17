@@ -14,6 +14,11 @@ async function getUser() {
   return { supabase, user }
 }
 
+async function requireMember(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (profile?.role === 'viewer') throw new Error('Нет доступа')
+}
+
 export async function recalculatePlotScore(plotId: string) {
   const { supabase } = await getUser()
 
@@ -60,6 +65,7 @@ export async function recalculatePlotScore(plotId: string) {
 // ─────────────────────────────────────────
 export async function createPlot(data: Omit<PlotInsert, 'created_by'>) {
   const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { data: plot, error } = await supabase
     .from('plots')
@@ -83,7 +89,8 @@ export async function createPlot(data: Omit<PlotInsert, 'created_by'>) {
 }
 
 export async function updatePlot(plotId: string, data: PlotUpdate) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { error } = await supabase
     .from('plots')
@@ -99,6 +106,7 @@ export async function updatePlot(plotId: string, data: PlotUpdate) {
 
 export async function archivePlot(plotId: string) {
   const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { error } = await supabase
     .from('plots')
@@ -119,20 +127,23 @@ export async function archivePlot(plotId: string) {
 }
 
 export async function updatePlotPositions(updates: { id: string; position: number }[]) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   await Promise.all(updates.map(({ id, position }) =>
     supabase.from('plots').update({ position }).eq('id', id)
   ))
 }
 
 export async function deletePlot(plotId: string) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
   const { error } = await supabase.from('plots').delete().eq('id', plotId)
   if (error) throw new Error(error.message)
 }
 
 export async function togglePublishPlot(plotId: string, published: boolean) {
   const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { error } = await supabase
     .from('plots')
@@ -153,7 +164,8 @@ export async function togglePublishPlot(plotId: string, published: boolean) {
 }
 
 export async function unarchivePlot(plotId: string) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { error } = await supabase
     .from('plots')
@@ -174,7 +186,8 @@ export async function saveScoringInputs(
     buildout_potential?: number | null
   }
 ) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   await supabase
     .from('scoring_inputs')
@@ -185,7 +198,8 @@ export async function saveScoringInputs(
 }
 
 export async function saveCalculatorSnapshot(plotId: string, inputs: Record<string, number | null>, outputs: Record<string, number | null>) {
-  const { supabase } = await getUser()
+  const { supabase, user } = await getUser()
+  await requireMember(supabase, user.id)
 
   const { error } = await supabase
     .from('calculator_snapshots')

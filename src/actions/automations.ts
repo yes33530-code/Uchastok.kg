@@ -53,6 +53,14 @@ export async function toggleAutomationRule(ruleId: string, enabled: boolean) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') throw new Error('Admin only')
+
   await supabase
     .from('automation_rules')
     .update({ enabled })
@@ -66,6 +74,14 @@ export async function deleteAutomationRule(ruleId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') throw new Error('Admin only')
+
   await supabase.from('automation_rules').delete().eq('id', ruleId)
 
   revalidatePath('/settings')
@@ -75,9 +91,10 @@ export async function updateChecklistItem(
   checklistId: string,
   itemIndex: number,
   checked: boolean,
-  userId: string
 ) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
 
   const { data: checklist } = await supabase
     .from('plot_checklists')
@@ -92,7 +109,7 @@ export async function updateChecklistItem(
     return {
       ...item,
       checked,
-      checked_by: checked ? userId : null,
+      checked_by: checked ? user.id : null,
       checked_at: checked ? new Date().toISOString() : null,
     }
   })
