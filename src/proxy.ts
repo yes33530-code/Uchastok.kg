@@ -47,13 +47,8 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/auth')) {
-    if (pathname === '/') {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      return NextResponse.redirect(loginUrl)
-    }
-  }
+  // Root goes to listings (public), not login
+
 
   // Redirect authenticated users away from login
   if (user && pathname === '/login') {
