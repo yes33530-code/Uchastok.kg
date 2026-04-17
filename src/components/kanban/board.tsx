@@ -107,8 +107,9 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
     const supabase = createClient()
     const channel = supabase
       .channel('kanban-board')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'plots', filter: 'archived=eq.false' }, (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'plots' }, (payload) => {
         const updated = payload.new as Plot
+        if (updated.archived) return
         if (recentlyMoved.has(updated.id)) return
         setPlotsByStage(prev => updatePlotInMap(prev, updated))
       })
