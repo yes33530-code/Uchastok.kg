@@ -8,12 +8,20 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <Link href="/listings" className="text-indigo-700 font-bold text-lg tracking-tight">
             Uchastok.kg
           </Link>
-          <a
-            href="tel:+996700000000"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
-          >
-            Связаться с нами
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="tel:+996700000000"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              Связаться с нами
+            </a>
+            <Link
+              href="/login"
+              className="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors"
+            >
+              Войти
+            </Link>
+          </div>
         </div>
       </header>
 
