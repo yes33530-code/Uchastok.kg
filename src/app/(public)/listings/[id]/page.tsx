@@ -112,7 +112,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="mt-6 space-y-3">
             <a
-              href="tel:+996700000000"
+              href="tel:+996997902903"
               className="flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-indigo-50 transition-colors"
             >
               <Phone className="w-4 h-4" />

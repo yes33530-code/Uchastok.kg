@@ -10,7 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
           <div className="flex items-center gap-4">
             <a
-              href="tel:+996700000000"
+              href="tel:+996997902903"
               className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
               Связаться с нами
