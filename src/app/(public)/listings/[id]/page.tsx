@@ -119,7 +119,7 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
               Позвонить
             </a>
             <a
-              href="https://wa.me/996700000000"
+              href="https://wa.me/996997902903"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-indigo-800 transition-colors"
