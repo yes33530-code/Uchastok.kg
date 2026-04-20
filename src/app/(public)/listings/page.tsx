@@ -1,6 +1,6 @@
 import { MapPin } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { ListingRow } from './ListingRow'
+import { ListingsClient } from './ListingsClient'
 
 export const metadata = { title: 'Участки — Uchastok.kg' }
 
@@ -19,8 +19,8 @@ export default async function ListingsPage() {
     <div className="min-h-screen bg-[#E4F0F6] px-4 sm:px-6 py-10">
       <div className="max-w-3xl mx-auto">
 
-        {/* Hero card */}
-        <div className="bg-white rounded-2xl border border-[#DFE1E6] shadow-sm px-6 py-5 mb-6">
+        {/* Hero */}
+        <div className="bg-white rounded-2xl border border-[#DFE1E6] shadow-sm px-6 py-5 mb-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Земельные участки</h1>
           <p className="text-sm text-gray-500">
             {list.length > 0
@@ -36,11 +36,7 @@ export default async function ListingsPage() {
             <p className="text-sm mt-1">Загляните позже — скоро появятся новые предложения</p>
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {list.map((plot) => (
-              <ListingRow key={plot.id} plot={plot} />
-            ))}
-          </ul>
+          <ListingsClient plots={list} />
         )}
 
       </div>

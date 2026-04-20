@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle, XCircle, MapPin, Phone, Zap, Droplets, Flame, Waves } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, MapPin, MessageCircle, Zap, Droplets, Flame, Waves } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { ContactForm } from './ContactForm'
 
 const ZONE_LABELS: Record<string, string> = {
   Residential: 'Жилая',
@@ -103,29 +104,34 @@ export default async function ListingDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Contact CTA */}
-        <div className="bg-indigo-600 rounded-2xl p-6 flex flex-col justify-between text-white">
-          <div>
-            <h2 className="font-bold text-lg mb-2">Заинтересованы?</h2>
-            <p className="text-indigo-200 text-sm leading-relaxed">
-              Свяжитесь с нами, чтобы получить подробную информацию об этом участке и организовать просмотр.
-            </p>
-          </div>
-          <div className="mt-6 space-y-3">
-            <a
-              href="tel:+996997902903"
-              className="flex items-center justify-center gap-2 w-full bg-white text-indigo-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-indigo-50 transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-              Позвонить
-            </a>
+        <div className="bg-indigo-600 rounded-2xl p-6 flex flex-col gap-5 text-white">
+          {/* Agent card */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+              УК
+            </div>
+            <div>
+              <p className="font-semibold text-sm">Uchastok.kg</p>
+              <p className="text-indigo-300 text-xs">Менеджер по продажам</p>
+            </div>
             <a
               href="https://wa.me/996997902903"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-indigo-800 transition-colors"
+              className="ml-auto flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-400 transition-colors text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
             >
+              <MessageCircle className="w-3.5 h-3.5" />
               WhatsApp
             </a>
+          </div>
+
+          <div className="border-t border-indigo-500" />
+
+          {/* Callback form */}
+          <div>
+            <p className="text-sm font-semibold mb-1">Перезвоним вам</p>
+            <p className="text-indigo-300 text-xs mb-3">Оставьте номер — свяжемся в течение часа</p>
+            <ContactForm />
           </div>
         </div>
       </div>
