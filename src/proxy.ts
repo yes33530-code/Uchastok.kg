@@ -33,22 +33,18 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Redirect unauthenticated users away from app routes
-  if (!user && pathname.startsWith('/dashboard') === false && !pathname.startsWith('/login') && !pathname.startsWith('/auth')) {
-    if (
-      pathname.startsWith('/plots') ||
-      pathname.startsWith('/board') ||
-      pathname.startsWith('/archive') ||
-      pathname.startsWith('/settings') ||
-      pathname.startsWith('/dashboard')
-    ) {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      return NextResponse.redirect(loginUrl)
-    }
+  const isAppRoute =
+    pathname.startsWith('/plots') ||
+    pathname.startsWith('/board') ||
+    pathname.startsWith('/archive') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/dashboard')
+
+  if (!user && isAppRoute) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    return NextResponse.redirect(loginUrl)
   }
-
-  // Root goes to listings (public), not login
-
 
   // Redirect authenticated users away from login
   if (user && pathname === '/login') {
