@@ -126,14 +126,6 @@ export async function archivePlot(plotId: string) {
   revalidatePath(`/plots/${plotId}`)
 }
 
-export async function updatePlotPositions(updates: { id: string; position: number }[]) {
-  const { supabase, user } = await getUser()
-  await requireMember(supabase, user.id)
-  await Promise.all(updates.map(({ id, position }) =>
-    supabase.from('plots').update({ position }).eq('id', id)
-  ))
-}
-
 export async function deletePlot(plotId: string) {
   const { supabase, user } = await getUser()
   await requireMember(supabase, user.id)
