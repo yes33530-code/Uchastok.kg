@@ -37,6 +37,14 @@ export type ListingPlot = {
   infra_sewer: boolean | null
 }
 
+function sotokForm(n: number): string {
+  const mod10 = n % 10
+  const mod100 = n % 100
+  if (mod10 === 1 && mod100 !== 11) return 'сотка'
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'сотки'
+  return 'соток'
+}
+
 export function ListingRow({ plot }: { plot: ListingPlot }) {
   const accentColor = plot.zone ? (ZONE_COLORS[plot.zone] ?? '#94a3b8') : '#94a3b8'
   const totalPrice = plot.price_usd_per_100sqm != null
@@ -68,7 +76,15 @@ export function ListingRow({ plot }: { plot: ListingPlot }) {
             <p className="text-2xl sm:text-3xl font-semibold text-foreground leading-none tabular-nums">
               {plot.size_sotok}
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">сот</p>
+            <p
+              className="mt-1 text-[11px] font-semibold uppercase tracking-wider bg-clip-text text-transparent"
+              style={{
+                backgroundImage:
+                  'linear-gradient(180deg, #9ca3af 0%, #e5e7eb 45%, #f3f4f6 55%, #6b7280 100%)',
+              }}
+            >
+              {sotokForm(plot.size_sotok)}
+            </p>
           </div>
         </div>
 
