@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { MapPin, Star, CalendarDays, LayoutGrid, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ScoreBadge } from '@/components/ui/score-badge'
 import { StageChart } from '@/components/dashboard/stage-chart'
@@ -58,95 +59,137 @@ export function DashboardClient({ initialPlots, stages }: Props) {
   }))
 
   const scoreBuckets = [
-    { name: '0–30', color: '#ef4444', count: plots.filter(p => (p.score ?? 0) <= 30).length },
-    { name: '31–55', color: '#f97316', count: plots.filter(p => (p.score ?? 0) > 30 && (p.score ?? 0) <= 55).length },
-    { name: '56–70', color: '#eab308', count: plots.filter(p => (p.score ?? 0) > 55 && (p.score ?? 0) <= 70).length },
-    { name: '71–85', color: '#22c55e', count: plots.filter(p => (p.score ?? 0) > 70 && (p.score ?? 0) <= 85).length },
-    { name: '86–100', color: '#10b981', count: plots.filter(p => (p.score ?? 0) > 85).length },
+    { name: '0–30', color: '#F87168', count: plots.filter(p => (p.score ?? 0) <= 30).length },
+    { name: '31–55', color: '#F5A25D', count: plots.filter(p => (p.score ?? 0) > 30 && (p.score ?? 0) <= 55).length },
+    { name: '56–70', color: '#E9C75A', count: plots.filter(p => (p.score ?? 0) > 55 && (p.score ?? 0) <= 70).length },
+    { name: '71–85', color: '#4BCE97', count: plots.filter(p => (p.score ?? 0) > 70 && (p.score ?? 0) <= 85).length },
+    { name: '86–100', color: '#22A06B', count: plots.filter(p => (p.score ?? 0) > 85).length },
   ]
 
   const recentPlots = plots.slice(0, 5)
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5">
+      {/* Title */}
+      <div>
+        <h2 className="text-[18px] font-semibold text-foreground leading-tight">Дашборд</h2>
+        <p className="mt-1 text-[13px] text-muted-foreground">Сводка по активным участкам.</p>
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Активных участков" value={totalPlots.toString()} />
-        <StatCard label="Средняя оценка" value={avgScore.toString()} sub="/100" />
-        <StatCard label="Добавлено в месяц" value={plotsThisMonth.toString()} />
-        <StatCard label="На доске" value={plots.filter(p => p.stage_id).length.toString()} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Активных участков" value={totalPlots.toString()} icon={MapPin} tint="#579DFF" />
+        <StatCard label="Средняя оценка" value={avgScore.toString()} sub="/100" icon={Star} tint="#E9C75A" />
+        <StatCard label="Добавлено в месяц" value={plotsThisMonth.toString()} icon={CalendarDays} tint="#9F8FEF" />
+        <StatCard label="На доске" value={plots.filter(p => p.stage_id).length.toString()} icon={LayoutGrid} tint="#4BCE97" />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div className="bg-[#142a50] border border-white/10 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white/80 mb-4">По стадиям</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+        <Panel title="По стадиям">
           <StageChart data={stageData} />
-        </div>
-        <div className="bg-[#142a50] border border-white/10 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white/80 mb-4">Распределение оценок</h3>
+        </Panel>
+        <Panel title="Распределение оценок">
           <ScoreDistributionChart data={scoreBuckets} />
-        </div>
+        </Panel>
       </div>
 
       {/* Recent plots */}
-      <div className="bg-[#142a50] border border-white/10 rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white/80">Последние участки</h3>
-          <Link href="/plots" className="text-xs text-indigo-400 hover:text-indigo-300">Все участки →</Link>
-        </div>
-        <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[480px]">
-          <thead>
-            <tr>
-              <th className="text-left py-2 font-medium text-white/30 text-xs uppercase tracking-wide">Адрес</th>
-              <th className="text-left py-2 font-medium text-white/30 text-xs uppercase tracking-wide">Площадь</th>
-              <th className="text-left py-2 font-medium text-white/30 text-xs uppercase tracking-wide">Стадия</th>
-              <th className="text-left py-2 font-medium text-white/30 text-xs uppercase tracking-wide">Оценка</th>
-              <th className="text-left py-2 font-medium text-white/30 text-xs uppercase tracking-wide">Добавлен</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Panel
+        title="Последние участки"
+        action={<Link href="/plots" className="text-[12px] text-primary hover:text-primary/80 font-medium">Все участки →</Link>}
+      >
+        {recentPlots.length === 0 ? (
+          <p className="text-[13px] text-muted-foreground text-center py-6">Нет участков</p>
+        ) : (
+          <ul className="divide-y divide-border/60">
             {recentPlots.map(plot => {
               const stageInfo = stages.find(s => s.id === plot.stage_id)
               return (
-                <tr key={plot.id} className="border-t border-white/5">
-                  <td className="py-2.5">
-                    <Link href={`/plots/${plot.id}`} className="font-medium text-white/80 hover:text-indigo-400 transition-colors">
-                      {plot.address}
-                    </Link>
-                  </td>
-                  <td className="py-2.5 text-white/40">{formatSotok(plot.size_sotok)}</td>
-                  <td className="py-2.5">
+                <li key={plot.id}>
+                  <Link
+                    href={`/plots/${plot.id}`}
+                    className="group flex items-center gap-3 py-2.5 -mx-1 px-1 rounded-md hover:bg-[var(--list)]/60 transition-colors"
+                  >
+                    <ScoreBadge score={plot.score} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        {plot.address}
+                      </p>
+                      <div className="mt-0.5 flex items-center gap-2 text-[12px] text-muted-foreground">
+                        <span className="tabular-nums">{formatSotok(plot.size_sotok)}</span>
+                        <span className="text-border">•</span>
+                        <span className="tabular-nums">{formatDate(plot.created_at)}</span>
+                      </div>
+                    </div>
                     {stageInfo ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: stageInfo.color }}>
+                      <span
+                        className="inline-flex items-center gap-1.5 shrink-0 px-2 py-1 rounded-md text-[11px] font-medium"
+                        style={{
+                          backgroundColor: `${stageInfo.color}22`,
+                          color: stageInfo.color,
+                        }}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stageInfo.color }} />
                         {stageInfo.name}
                       </span>
-                    ) : <span className="text-white/20">—</span>}
-                  </td>
-                  <td className="py-2.5"><ScoreBadge score={plot.score} size="sm" /></td>
-                  <td className="py-2.5 text-white/30">{formatDate(plot.created_at)}</td>
-                </tr>
+                    ) : (
+                      <span className="shrink-0 text-[11px] text-muted-foreground/60">—</span>
+                    )}
+                  </Link>
+                </li>
               )
             })}
-            {recentPlots.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-white/30">Нет участков</td></tr>
-            )}
-          </tbody>
-        </table>
-        </div>
-      </div>
+          </ul>
+        )}
+      </Panel>
     </div>
   )
 }
 
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="bg-[#142a50] border border-white/10 rounded-xl p-5">
-      <p className="text-xs text-white/40 mb-1">{label}</p>
-      <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-white">{value}</span>
-        {sub && <span className="text-sm text-white/30">{sub}</span>}
+    <div className="bg-card ring-1 ring-white/[0.08] shadow rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</h3>
+        {action}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  tint,
+}: {
+  label: string
+  value: string
+  sub?: string
+  icon: LucideIcon
+  tint: string
+}) {
+  return (
+    <div className="bg-card ring-1 ring-white/[0.08] shadow rounded-md p-3.5">
+      <div className="flex items-start gap-3">
+        <span
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+          style={{ backgroundColor: `${tint}22`, color: tint }}
+        >
+          <Icon size={16} strokeWidth={2.25} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-semibold truncate">
+            {label}
+          </p>
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-[22px] font-bold text-foreground tabular-nums leading-none">{value}</span>
+            {sub && <span className="text-[13px] text-muted-foreground">{sub}</span>}
+          </div>
+        </div>
       </div>
     </div>
   )
