@@ -8,16 +8,15 @@ import type { PlotFile } from '@/types/plot'
 interface Props {
   plotId: string
   initialFiles: PlotFile[]
-  dark?: boolean
 }
 
 function fileBg(mimeType: string | null) {
-  if (!mimeType) return '#334155'
-  if (mimeType.startsWith('image/')) return '#312e81'
-  if (mimeType === 'application/pdf') return '#7f1d1d'
-  if (mimeType.includes('word') || mimeType.includes('document')) return '#1e3a5f'
-  if (mimeType.includes('sheet') || mimeType.includes('excel') || mimeType.includes('csv')) return '#14532d'
-  return '#1e293b'
+  if (!mimeType) return '#64748B'                         // slate
+  if (mimeType.startsWith('image/')) return '#0369A1'     // accent blue (photos)
+  if (mimeType === 'application/pdf') return '#DC2626'    // red (pdf)
+  if (mimeType.includes('word') || mimeType.includes('document')) return '#0F766E'  // trust teal (docs)
+  if (mimeType.includes('sheet') || mimeType.includes('excel') || mimeType.includes('csv')) return '#16A34A' // green (sheets)
+  return '#334155'
 }
 
 function FileThumb({ file, previewUrl, onClick }: { file: PlotFile; previewUrl?: string; onClick: () => void }) {
@@ -31,12 +30,12 @@ function FileThumb({ file, previewUrl, onClick }: { file: PlotFile; previewUrl?:
     >
       {isImage && previewUrl ? (
         <img src={previewUrl} alt={file.name} className="w-full h-full object-cover" />
-      ) : isImage ? (
-        <Image className="w-5 h-5 text-indigo-300" />
-      ) : file.mime_type === 'application/pdf' ? (
-        <FileText className="w-5 h-5 text-red-300" />
       ) : (
-        <File className="w-5 h-5 text-slate-300" />
+        <>
+          {isImage && <Image className="w-5 h-5 text-white" />}
+          {file.mime_type === 'application/pdf' && <FileText className="w-5 h-5 text-white" />}
+          {!isImage && file.mime_type !== 'application/pdf' && <File className="w-5 h-5 text-white" />}
+        </>
       )}
     </button>
   )
@@ -49,14 +48,13 @@ function formatBytes(bytes: number | null) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function FileAttachments({ plotId, initialFiles, dark }: Props) {
+export function FileAttachments({ plotId, initialFiles }: Props) {
   const [files, setFiles] = useState<PlotFile[]>(initialFiles)
   const [uploading, setUploading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const [lightbox, setLightbox] = useState<{ url: string; name: string } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const d = dark ?? false
 
   // Load signed URLs for image thumbnails
   useEffect(() => {
@@ -146,26 +144,21 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
     }
   }
 
-  const wrapCls = d
-    ? 'rounded-xl p-4'
-    : 'bg-white rounded-xl border border-gray-200 p-6'
-  const wrapStyle = d ? { backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' } : {}
-
   return (
     <>
-      <div className={wrapCls} style={wrapStyle}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={`text-sm font-semibold flex items-center gap-2 ${d ? 'text-white/80' : 'text-gray-900'}`}>
-            <Paperclip className={`w-4 h-4 ${d ? 'text-white/30' : 'text-gray-400'}`} />
+      <div className="bg-[var(--list)]/60 rounded-md border border-border p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[11px] font-semibold flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
+            <Paperclip className="w-3 h-3" />
             Файлы
             {files.length > 0 && (
-              <span className={`text-xs font-medium ${d ? 'text-white/30' : 'text-gray-400'}`}>({files.length})</span>
+              <span className="text-[11px] font-medium tabular-nums text-muted-foreground normal-case">({files.length})</span>
             )}
           </h3>
           <button
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className={`flex items-center gap-1.5 text-xs font-medium disabled:opacity-50 transition-colors ${d ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'}`}
+            className="flex items-center gap-1.5 text-xs font-medium disabled:opacity-50 transition-colors text-primary hover:text-primary/80"
           >
             <Upload className="w-3.5 h-3.5" />
             {uploading ? 'Загрузка...' : 'Загрузить'}
@@ -176,19 +169,18 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
         {files.length === 0 ? (
           <div
             onClick={() => inputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${d ? 'border-white/10 hover:border-indigo-500/40 hover:bg-white/3' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30'}`}
+            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors border-border hover:border-primary/40 hover:bg-primary/5"
           >
-            <Upload className={`w-6 h-6 mx-auto mb-2 ${d ? 'text-white/20' : 'text-gray-300'}`} />
-            <p className={`text-sm ${d ? 'text-white/30' : 'text-gray-400'}`}>Нажмите или перетащите файлы</p>
-            <p className={`text-xs mt-1 ${d ? 'text-white/20' : 'text-gray-300'}`}>До 50 МБ, любой формат</p>
+            <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground/60" />
+            <p className="text-sm text-muted-foreground">Нажмите или перетащите файлы</p>
+            <p className="text-xs mt-1 text-muted-foreground/70">До 50 МБ, любой формат</p>
           </div>
         ) : (
           <div className="space-y-2">
             {files.map(file => (
               <div
                 key={file.id}
-                className={`flex items-center gap-3 px-2.5 py-2 rounded-lg group transition-colors ${d ? 'hover:bg-white/5' : 'border border-gray-100 hover:bg-gray-50'}`}
-                style={d ? { border: '1px solid rgba(255,255,255,0.06)' } : {}}
+                className="flex items-center gap-3 px-2.5 py-2 rounded-lg group transition-colors border border-border hover:bg-muted/40"
               >
                 <FileThumb
                   file={file}
@@ -197,18 +189,18 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
                 />
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-sm truncate cursor-pointer hover:underline ${d ? 'text-white/70' : 'text-gray-900'}`}
+                    className="text-sm truncate cursor-pointer hover:underline text-foreground"
                     onClick={() => handleOpen(file)}
                   >
                     {file.name}
                   </p>
-                  {file.size && <p className={`text-xs ${d ? 'text-white/30' : 'text-gray-400'}`}>{formatBytes(file.size)}</p>}
+                  {file.size && <p className="text-xs tabular-nums text-muted-foreground">{formatBytes(file.size)}</p>}
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                   {file.storage_path && !file.mime_type?.startsWith('image/') && (
                     <button
                       onClick={() => handleDownload(file)}
-                      className={`p-1.5 rounded transition-colors ${d ? 'text-white/30 hover:text-indigo-400' : 'text-gray-400 hover:text-indigo-600'}`}
+                      className="p-1.5 rounded transition-colors text-muted-foreground hover:text-accent"
                       title="Открыть в новой вкладке"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -217,7 +209,7 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
                   {file.storage_path && file.mime_type?.startsWith('image/') && (
                     <button
                       onClick={() => handleDownload(file)}
-                      className={`p-1.5 rounded transition-colors ${d ? 'text-white/30 hover:text-indigo-400' : 'text-gray-400 hover:text-indigo-600'}`}
+                      className="p-1.5 rounded transition-colors text-muted-foreground hover:text-accent"
                       title="Скачать"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -226,7 +218,7 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
                   <button
                     onClick={() => handleDelete(file)}
                     disabled={deletingId === file.id}
-                    className={`p-1.5 rounded transition-colors disabled:opacity-40 ${d ? 'text-white/30 hover:text-red-400' : 'text-gray-400 hover:text-red-600'}`}
+                    className="p-1.5 rounded transition-colors disabled:opacity-40 text-muted-foreground hover:text-destructive"
                     title="Удалить"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -237,7 +229,7 @@ export function FileAttachments({ plotId, initialFiles, dark }: Props) {
             <button
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className={`w-full flex items-center justify-center gap-2 py-2 text-xs border border-dashed rounded-lg transition-colors disabled:opacity-50 ${d ? 'text-white/30 border-white/10 hover:border-indigo-500/40 hover:text-indigo-400' : 'text-gray-400 border-gray-200 hover:text-indigo-600 hover:border-indigo-300'}`}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs border border-dashed rounded-lg transition-colors disabled:opacity-50 text-muted-foreground border-border hover:text-primary hover:border-primary/40"
             >
               <Upload className="w-3.5 h-3.5" />
               Добавить файлы

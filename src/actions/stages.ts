@@ -18,18 +18,23 @@ async function requireMember(supabase: Awaited<ReturnType<typeof createClient>>,
 export async function updateStagePositions(updates: { id: string; position: number }[]) {
   const { supabase, user } = await getUser()
   await requireMember(supabase, user.id)
-  await Promise.all(updates.map(({ id, position }) =>
+  const results = await Promise.all(updates.map(({ id, position }) =>
     supabase.from('kanban_stages').update({ position }).eq('id', id)
   ))
+  const failure = results.find(r => r.error)
+  if (failure?.error) throw new Error(failure.error.message)
   revalidatePath('/board')
 }
 
 export async function updatePlotPositions(updates: { id: string; position: number }[]) {
   const { supabase, user } = await getUser()
   await requireMember(supabase, user.id)
-  await Promise.all(updates.map(({ id, position }) =>
+  const results = await Promise.all(updates.map(({ id, position }) =>
     supabase.from('plots').update({ position }).eq('id', id)
   ))
+  const failure = results.find(r => r.error)
+  if (failure?.error) throw new Error(failure.error.message)
+  revalidatePath('/board')
 }
 
 export async function renameStage(stageId: string, name: string) {

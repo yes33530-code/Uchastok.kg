@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "@21st-dev/magic": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@21st-dev/magic@latest", "API_KEY=${TWENTYFIRST_API_KEY}"]
+    },
+    "shadcn": {
+      "command": "C:\\Program Files\\nodejs\\npx.cmd",
+      "args": ["-y", "shadcn@latest", "mcp"]
+    }
+  }
+}

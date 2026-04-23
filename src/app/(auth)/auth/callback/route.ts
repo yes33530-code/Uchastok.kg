@@ -34,11 +34,15 @@ export async function GET(request: NextRequest) {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
         const meta = authUser.user_metadata
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: authUser.id,
           full_name: (meta.full_name ?? meta.name ?? null) as string | null,
           avatar_url: (meta.avatar_url ?? meta.picture ?? null) as string | null,
         }, { onConflict: 'id' })
+        if (profileError) {
+          console.error('auth/callback: profile upsert failed', profileError)
+          return NextResponse.redirect(`${origin}/login?error=profile`)
+        }
       }
       return redirectResponse
     }

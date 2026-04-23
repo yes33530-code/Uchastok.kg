@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Topbar } from '@/components/layout/topbar'
 import { PlotForm } from '@/components/plots/plot-form'
 import { EditBackdrop } from '@/components/plots/edit-backdrop'
 
@@ -20,7 +19,6 @@ export default async function EditPlotPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <Topbar title="Редактировать участок" />
       <EditBackdrop>
         <PlotForm plot={plot} stages={stages ?? []} members={members ?? []} />
       </EditBackdrop>

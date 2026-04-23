@@ -1,34 +1,30 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Zap, Droplets, Flame, Waves } from 'lucide-react'
+import { Zap, Droplets, Flame, Waves, Check, X } from 'lucide-react'
+import { Toggle } from '@/components/ui/toggle'
+import { Button } from '@/components/ui/button'
 import { ListingRow, type ListingPlot } from './ListingRow'
 
 const ZONES = [
-  { value: 'all',        label: 'Все' },
-  { value: 'Residential', label: 'Жилая',       color: '#4BCE97' },
+  { value: 'all',         label: 'Все',          color: null       },
+  { value: 'Residential', label: 'Жилая',        color: '#4BCE97' },
   { value: 'Commercial',  label: 'Коммерческая', color: '#FEA362' },
   { value: 'Agricultural',label: 'С/х',          color: '#F5CD47' },
   { value: 'Mixed-use',   label: 'Смешанная',    color: '#9F8FEF' },
-]
+] as const
 
 const INFRA_FILTERS = [
-  { key: 'infra_electricity' as const, icon: Zap,      label: 'Электричество' },
+  { key: 'infra_electricity' as const, icon: Zap,      label: 'Свет' },
   { key: 'infra_water'       as const, icon: Droplets, label: 'Вода' },
   { key: 'infra_gas'         as const, icon: Flame,    label: 'Газ' },
-  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канализация' },
+  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канал.' },
 ]
 
 export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
-  const [zone, setZone] = useState('all')
+  const [zone, setZone] = useState<string>('all')
   const [legalOnly, setLegalOnly] = useState(false)
   const [infraReq, setInfraReq] = useState<Set<string>>(new Set())
-
-  // Stats from full list
-  const prices = plots.map(p => p.price_usd_per_100sqm).filter((p): p is number => p != null)
-  const minPrice = prices.length ? Math.min(...prices) : null
-  const maxPrice = prices.length ? Math.max(...prices) : null
-  const avgSize = plots.length ? Math.round(plots.reduce((s, p) => s + p.size_sotok, 0) / plots.length) : 0
 
   const filtered = useMemo(() => plots
     .filter(p => zone === 'all' || p.zone === zone)
@@ -37,131 +33,118 @@ export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
     [plots, zone, legalOnly, infraReq]
   )
 
+  const activeFilters = (zone !== 'all' ? 1 : 0) + (legalOnly ? 1 : 0) + infraReq.size
+
   function toggleInfra(key: string) {
     setInfraReq(prev => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
       return next
     })
   }
 
-  return (
-    <>
-      {/* Stats strip */}
-      {plots.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#DFE1E6] shadow-sm px-6 py-4 mb-4 flex flex-wrap gap-6">
-          <Stat label="Участков" value={String(plots.length)} />
-          {avgSize > 0 && <Stat label="Средний размер" value={`${avgSize} сот`} />}
-          {minPrice != null && maxPrice != null && (
-            <Stat
-              label="Цена / 100 м²"
-              value={minPrice === maxPrice
-                ? `$${minPrice.toLocaleString('en')}`
-                : `$${minPrice.toLocaleString('en')} — $${maxPrice.toLocaleString('en')}`}
-            />
-          )}
-        </div>
-      )}
+  function resetFilters() {
+    setZone('all')
+    setLegalOnly(false)
+    setInfraReq(new Set())
+  }
 
-      {/* Filter bar */}
-      <div className="bg-white rounded-2xl border border-[#DFE1E6] shadow-sm px-5 py-4 mb-6 space-y-3">
-        {/* Zone pills */}
-        <div className="flex flex-wrap gap-2">
+  return (
+    <div className="space-y-3">
+      {/* Thin filter bar */}
+      <div className="rounded-lg bg-card ring-1 ring-foreground/10 px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* Zone */}
+        <div className="flex flex-wrap gap-1">
           {ZONES.map(z => {
             const active = zone === z.value
             return (
-              <button
+              <Toggle
                 key={z.value}
-                onClick={() => setZone(z.value)}
-                className="text-xs font-semibold px-3 py-1 rounded-full border transition-all"
+                size="sm"
+                pressed={active}
+                onPressedChange={() => setZone(z.value)}
                 style={active && z.color ? {
-                  backgroundColor: z.color + '33',
-                  borderColor: z.color,
-                  color: '#172B4D',
-                } : active ? {
-                  backgroundColor: '#E4F0F6',
-                  borderColor: '#0079BF',
-                  color: '#0052CC',
-                } : {
-                  backgroundColor: '#F1F2F4',
-                  borderColor: '#DFE1E6',
-                  color: '#97A0AF',
-                }}
+                  backgroundColor: z.color + '26',
+                  boxShadow: `inset 0 0 0 1px ${z.color}`,
+                  color: 'var(--foreground)',
+                } : undefined}
               >
                 {z.label}
-              </button>
+              </Toggle>
             )
           })}
         </div>
 
-        {/* Legal + infra toggles */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setLegalOnly(v => !v)}
-            className="text-xs font-semibold px-3 py-1 rounded-full border transition-all"
-            style={legalOnly ? {
-              backgroundColor: '#E3FCEF',
-              borderColor: '#4BCE97',
-              color: '#006644',
-            } : {
-              backgroundColor: '#F1F2F4',
-              borderColor: '#DFE1E6',
-              color: '#97A0AF',
-            }}
-          >
-            ✅ Красная книга
-          </button>
+        <span className="h-5 w-px bg-border" />
 
+        {/* Legal */}
+        <Toggle
+          size="sm"
+          pressed={legalOnly}
+          onPressedChange={setLegalOnly}
+          className={legalOnly
+            ? 'bg-primary/10 text-primary data-[state=on]:bg-primary/10 ring-1 ring-primary/30'
+            : ''}
+        >
+          <Check className="size-3.5" />
+          Красная книга
+        </Toggle>
+
+        <span className="h-5 w-px bg-border" />
+
+        {/* Infra */}
+        <div className="flex flex-wrap gap-1">
           {INFRA_FILTERS.map(({ key, icon: Icon, label }) => {
             const active = infraReq.has(key)
             return (
-              <button
+              <Toggle
                 key={key}
-                onClick={() => toggleInfra(key)}
-                className="flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border transition-all"
-                style={active ? {
-                  backgroundColor: '#E9F2FF',
-                  borderColor: '#579DFF',
-                  color: '#0052CC',
-                } : {
-                  backgroundColor: '#F1F2F4',
-                  borderColor: '#DFE1E6',
-                  color: '#97A0AF',
-                }}
+                size="sm"
+                pressed={active}
+                onPressedChange={() => toggleInfra(key)}
+                className={active
+                  ? 'bg-accent/10 text-accent data-[state=on]:bg-accent/10 ring-1 ring-accent/30'
+                  : ''}
               >
-                <Icon className="w-3 h-3" />
+                <Icon className="size-3.5" />
                 {label}
-              </button>
+              </Toggle>
             )
           })}
         </div>
+
+        {/* Count + reset on the right */}
+        <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="tabular-nums">
+            {filtered.length === plots.length ? plots.length : `${filtered.length} / ${plots.length}`}
+          </span>
+          {activeFilters > 0 && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1 font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="size-3" />
+              Сбросить
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Results */}
+      {/* List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#DFE1E6] shadow-sm text-center py-16 text-gray-400">
-          <p className="font-medium">Нет участков по выбранным фильтрам</p>
-          <button
-            onClick={() => { setZone('all'); setLegalOnly(false); setInfraReq(new Set()) }}
-            className="mt-3 text-sm text-indigo-500 hover:text-indigo-700 transition-colors"
-          >
+        <div className="rounded-lg border border-border bg-card ring-1 ring-foreground/5 text-center py-12 px-6">
+          <p className="font-medium text-foreground">Нет записей по выбранным фильтрам</p>
+          <Button variant="link" onClick={resetFilters} className="mt-1">
             Сбросить фильтры
-          </button>
+          </Button>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-1.5">
           {filtered.map(plot => <ListingRow key={plot.id} plot={plot} />)}
         </ul>
       )}
-    </>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-      <p className="text-sm font-bold text-gray-800 mt-0.5">{value}</p>
     </div>
   )
 }

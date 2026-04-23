@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { Topbar } from '@/components/layout/topbar'
 import { KanbanBoard } from '@/components/kanban/board'
 
 export const metadata = { title: 'Доска — Uchastok.kg' }
@@ -8,10 +7,12 @@ export const metadata = { title: 'Доска — Uchastok.kg' }
 export default async function BoardPage() {
   const supabase = await createClient()
 
-  const [{ data: { user } }, { data: stages }, { data: rawPlots }] = await Promise.all([
+  const [{ data: { user } }, { data: stages }, { data: rawPlots }, { data: members }, { data: labelDefs }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('kanban_stages').select('*').order('position'),
     supabase.from('plots').select('*, plot_files(count)').eq('archived', false).order('position'),
+    supabase.from('profiles').select('id, full_name, avatar_url').eq('approved', true).order('created_at'),
+    supabase.from('label_definitions').select('name, color').order('created_at'),
   ])
 
   const fileCounts: Record<string, number> = {}
@@ -25,13 +26,17 @@ export default async function BoardPage() {
   const plots = anyPlots?.map(({ plot_files: _pf, ...rest }: any) => rest) ?? []
 
   return (
-    <>
-      <Topbar title="Доска" />
-      <main className="flex-1 overflow-hidden p-3 md:p-6">
-        <Suspense>
-          <KanbanBoard stages={stages ?? []} initialPlots={plots} userId={user?.id ?? ''} fileCounts={fileCounts} />
-        </Suspense>
-      </main>
-    </>
+    <main className="flex-1 overflow-hidden flex flex-col">
+      <Suspense>
+        <KanbanBoard
+          stages={stages ?? []}
+          initialPlots={plots}
+          userId={user?.id ?? ''}
+          fileCounts={fileCounts}
+          members={members ?? []}
+          labelDefs={labelDefs ?? []}
+        />
+      </Suspense>
+    </main>
   )
 }

@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core'
-import { Plus, GripVertical } from 'lucide-react'
+import { Plus, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { createPlot } from '@/actions/plots'
 import { renameStage } from '@/actions/stages'
@@ -137,16 +137,14 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
     <div
       ref={setColumnRef}
       style={columnStyle}
-      className="flex flex-col w-64 shrink-0 rounded-xl"
+      className="group/col flex flex-col w-[272px] shrink-0 rounded-[12px] bg-[var(--list)] overflow-hidden max-h-full"
     >
-      {/* Header — drag handle for column */}
+      {/* Header — bare title + menu affordance */}
       <div
-        className="flex items-center gap-1.5 px-2 py-2.5 rounded-t-xl cursor-grab active:cursor-grabbing"
-        style={{ borderTop: `3px solid ${stage.color}`, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        className="flex items-center gap-2 px-3 pt-2.5 pb-2 cursor-grab active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="w-3.5 h-3.5 text-white/20 shrink-0" />
         {editingName ? (
           <input
             ref={nameRef}
@@ -157,38 +155,39 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
               if (e.key === 'Enter') commitRename()
               if (e.key === 'Escape') { setNameValue(stage.name); setEditingName(false) }
             }}
-            // Stop drag listeners from firing while editing text
             onPointerDown={e => e.stopPropagation()}
-            className="flex-1 text-sm font-semibold text-white bg-transparent outline-none border-b border-white/30 min-w-0"
+            className="flex-1 text-[14px] font-semibold text-foreground bg-transparent outline-none border-b border-border min-w-0"
           />
         ) : (
           <span
-            className="flex-1 text-sm font-semibold text-white/90 truncate hover:text-white transition-colors"
+            className="flex-1 text-[14px] font-semibold text-foreground truncate"
             onDoubleClick={e => { e.stopPropagation(); setEditingName(true) }}
             title="Двойной клик для переименования"
           >
             {nameValue}
           </span>
         )}
-        <span
-          className="text-xs font-medium rounded-full px-1.5 py-0.5 text-white shrink-0"
-          style={{ backgroundColor: stage.color }}
+        <button
+          type="button"
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation() }}
+          className="shrink-0 p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-white/[0.06] transition-colors"
+          aria-label="Меню списка"
+          title={`${plots.length} карточек`}
         >
-          {plots.length}
-        </span>
+          <MoreHorizontal className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Cards body — separate droppable */}
       <div
         ref={setDropRef}
-        className="flex-1 px-1.5 pt-1.5 pb-1.5 space-y-1.5 min-h-[3rem] rounded-b-xl transition-colors"
-        style={{
-          backgroundColor: showDropHighlight ? `${stage.color}12` : '#0f1a2e',
-          borderLeft: `1px solid ${showDropHighlight ? stage.color + '40' : 'rgba(255,255,255,0.07)'}`,
-          borderRight: `1px solid ${showDropHighlight ? stage.color + '40' : 'rgba(255,255,255,0.07)'}`,
-          borderBottom: `1px solid ${showDropHighlight ? stage.color + '40' : 'rgba(255,255,255,0.07)'}`,
-          borderTop: 'none',
-        }}
+        className="flex-1 min-h-[3rem] overflow-y-auto px-2 pb-1.5 space-y-2 transition-colors"
+        style={
+          showDropHighlight
+            ? { backgroundColor: `${stage.color}14`, boxShadow: `inset 0 0 0 1px ${stage.color}40` }
+            : undefined
+        }
       >
         <SortableContext items={plots.map(p => p.id)} strategy={verticalListSortingStrategy}>
           {plots.map(plot => (
@@ -202,25 +201,26 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
         </SortableContext>
 
         {plots.length === 0 && showDropHighlight && (
-          <div className="h-14 rounded-lg border-2 border-dashed opacity-30" style={{ borderColor: stage.color }} />
+          <div className="h-14 rounded-md border-2 border-dashed opacity-40" style={{ borderColor: stage.color }} />
         )}
-
-        {/* Inline add */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-transparent focus-within:border-white/15 transition-colors"
-          style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-        >
-          <Plus className="w-3.5 h-3.5 text-white/20 shrink-0" />
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Добавить карточку..."
-            className="flex-1 bg-transparent text-xs text-white/60 placeholder-white/20 outline-none"
-          />
-        </div>
       </div>
+
+      {/* Inline add — sticky footer, Trello-style "+ Add a card" */}
+      <button
+        type="button"
+        onClick={() => inputRef.current?.focus()}
+        className="group/add mx-2 mb-2 mt-0 flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[13px] text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5 shrink-0" />
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder="Добавить карточку…"
+          className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground outline-none group-hover/add:placeholder:text-foreground"
+        />
+      </button>
     </div>
   )
 }

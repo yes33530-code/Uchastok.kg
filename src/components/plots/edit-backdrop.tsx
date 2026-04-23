@@ -9,8 +9,7 @@ export function EditBackdrop({ children }: { children: React.ReactNode }) {
       onClick={() => router.back()}
     >
       <div
-        className="max-w-3xl mx-auto rounded-xl p-5 md:p-6"
-        style={{ backgroundColor: '#142a50', border: '1px solid rgba(255,255,255,0.08)' }}
+        className="max-w-3xl mx-auto rounded-lg p-5 md:p-6 bg-card ring-1 ring-white/[0.08] shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         {children}

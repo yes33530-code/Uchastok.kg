@@ -1,4 +1,4 @@
-import { Sidebar } from '@/components/layout/sidebar'
+import { TopBar } from '@/components/layout/top-bar'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Toaster } from 'sonner'
@@ -13,12 +13,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!profile?.approved) redirect('/pending')
 
   return (
-    <div className="flex h-screen" style={{ background: '#0e2040' }}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden md:ml-56 pb-16 md:pb-0">
+    <div className="dark flex flex-col h-screen bg-background text-foreground">
+      <TopBar />
+      <div className="flex-1 flex flex-col overflow-hidden">
         {children}
       </div>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" theme="dark" richColors />
     </div>
   )
 }
