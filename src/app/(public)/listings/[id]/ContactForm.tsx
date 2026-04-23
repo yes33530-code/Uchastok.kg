@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Phone } from 'lucide-react'
+import { Phone, Check } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export function ContactForm() {
   const [name, setName] = useState('')
@@ -18,11 +20,14 @@ export function ContactForm() {
   if (sent) {
     return (
       <div className="text-center py-4">
-        <p className="text-white font-semibold text-sm">Открываем WhatsApp...</p>
-        <p className="text-indigo-200 text-xs mt-1">Мы ответим в ближайшее время</p>
+        <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-primary/10">
+          <Check className="size-5 text-primary" />
+        </div>
+        <p className="font-semibold text-sm text-foreground">Открываем WhatsApp…</p>
+        <p className="mt-1 text-xs text-muted-foreground">Мы ответим в ближайшее время</p>
         <button
           onClick={() => setSent(false)}
-          className="mt-3 text-xs text-indigo-200 underline hover:text-white"
+          className="mt-3 text-xs text-primary hover:underline"
         >
           Отправить снова
         </button>
@@ -32,29 +37,24 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2.5">
-      <input
+      <Input
         type="text"
         placeholder="Ваше имя"
         value={name}
         onChange={e => setName(e.target.value)}
         required
-        className="w-full text-sm px-3 py-2 rounded-lg bg-indigo-700 border border-indigo-500 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-white/30"
       />
-      <input
+      <Input
         type="tel"
         placeholder="+996 ___  __ __"
         value={phone}
         onChange={e => setPhone(e.target.value)}
         required
-        className="w-full text-sm px-3 py-2 rounded-lg bg-indigo-700 border border-indigo-500 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-white/30"
       />
-      <button
-        type="submit"
-        className="w-full flex items-center justify-center gap-2 bg-white text-indigo-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-indigo-50 transition-colors"
-      >
-        <Phone className="w-4 h-4" />
+      <Button type="submit" className="w-full" size="lg">
+        <Phone className="size-4" />
         Перезвоните мне
-      </button>
+      </Button>
     </form>
   )
 }

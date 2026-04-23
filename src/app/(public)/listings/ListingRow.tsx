@@ -1,8 +1,6 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle, XCircle, Zap, Droplets, Flame, Waves, ChevronDown } from 'lucide-react'
+import { CheckCircle2, XCircle, Zap, Droplets, Flame, Waves, MapPin, ArrowUpRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 const ZONE_LABELS: Record<string, string> = {
   Residential: 'Жилая',
@@ -19,10 +17,10 @@ const ZONE_COLORS: Record<string, string> = {
 }
 
 const INFRA_ITEMS = [
-  { key: 'infra_electricity' as const, icon: Zap,      label: 'Электричество' },
+  { key: 'infra_electricity' as const, icon: Zap,      label: 'Свет' },
   { key: 'infra_water'       as const, icon: Droplets, label: 'Вода' },
   { key: 'infra_gas'         as const, icon: Flame,    label: 'Газ' },
-  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канализация' },
+  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канал.' },
 ]
 
 export type ListingPlot = {
@@ -40,94 +38,130 @@ export type ListingPlot = {
 }
 
 export function ListingRow({ plot }: { plot: ListingPlot }) {
-  const [infraOpen, setInfraOpen] = useState(false)
-
-  const accentColor = plot.zone ? (ZONE_COLORS[plot.zone] ?? '#DFE1E6') : '#DFE1E6'
+  const accentColor = plot.zone ? (ZONE_COLORS[plot.zone] ?? '#94a3b8') : '#94a3b8'
   const totalPrice = plot.price_usd_per_100sqm != null
     ? Math.round(plot.price_usd_per_100sqm * plot.size_sotok)
     : null
 
+  const infraCount = INFRA_ITEMS.filter(({ key }) => plot[key] === true).length
+
   return (
-    <li className="bg-white rounded-xl border border-[#DFE1E6] shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      <div className="flex">
-        {/* Zone accent bar */}
-        <div className="w-1 shrink-0 rounded-l-xl" style={{ backgroundColor: accentColor }} />
+    <li>
+      <Link
+        href={`/listings/${plot.id}`}
+        className="group/card block h-full rounded-2xl bg-card ring-1 ring-foreground/10 overflow-hidden transition-all duration-200 hover:ring-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {/* Zone banner */}
+        <div
+          className="relative h-24 overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${accentColor}33 0%, ${accentColor}14 60%, transparent 100%)`,
+          }}
+        >
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, ${accentColor}55 1px, transparent 0)`,
+              backgroundSize: '16px 16px',
+            }}
+          />
 
-        <div className="flex-1 min-w-0 p-4">
-          {/* Main row */}
-          <div className="flex items-start gap-4">
-            {/* Left col: size + total price */}
-            <div className="w-20 shrink-0 text-right">
-              <p className="text-base font-bold text-gray-900 leading-tight">{plot.size_sotok} сот</p>
-              {totalPrice != null && (
-                <p className="text-xs text-gray-500 mt-0.5">${totalPrice.toLocaleString('en')}</p>
-              )}
-            </div>
-
-            {/* Center: address + notes — link here */}
-            <Link href={`/listings/${plot.id}`} className="flex-1 min-w-0 group">
-              <h2 className="font-semibold text-gray-900 text-sm leading-snug group-hover:text-indigo-700 transition-colors truncate">
-                {plot.address}
-              </h2>
-              {plot.notes && (
-                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{plot.notes}</p>
-              )}
-            </Link>
-
-            {/* Right: zone badge + legal + infra toggle */}
-            <div className="shrink-0 flex items-center gap-2">
-              {plot.zone && (
-                <span
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-gray-800"
-                  style={{ backgroundColor: accentColor + '33' }}
-                >
-                  {ZONE_LABELS[plot.zone] ?? plot.zone}
-                </span>
-              )}
-
-              {plot.legal_clearance === true
-                ? <CheckCircle className="w-4 h-4 shrink-0" style={{ color: '#4BCE97' }} />
-                : <XCircle className="w-4 h-4 shrink-0" style={{ color: '#F87168' }} />
-              }
-
-              <button
-                onClick={() => setInfraOpen(v => !v)}
-                className="p-0.5 rounded hover:bg-gray-100 transition-colors"
-                aria-label="Показать инфраструктуру"
+          <div className="relative h-full px-5 py-4 flex items-start justify-between">
+            {plot.zone && (
+              <Badge
+                variant="outline"
+                className="bg-card/80 backdrop-blur-sm border-transparent text-foreground/80 font-medium"
+                style={{ boxShadow: `inset 0 0 0 1px ${accentColor}66` }}
               >
-                <ChevronDown
-                  className="w-4 h-4 text-gray-400 transition-transform"
-                  style={{ transform: infraOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                <span
+                  className="size-1.5 rounded-full mr-0.5"
+                  style={{ backgroundColor: accentColor }}
                 />
-              </button>
+                {ZONE_LABELS[plot.zone] ?? plot.zone}
+              </Badge>
+            )}
+
+            <div className="text-right">
+              <p className="text-2xl font-semibold text-foreground leading-none tabular-nums">
+                {plot.size_sotok}
+                <span className="text-sm text-muted-foreground ml-1 font-normal">сот</span>
+              </p>
+              {totalPrice != null && (
+                <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                  ~${totalPrice.toLocaleString('en')}
+                </p>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Infra expanded panel */}
-          {infraOpen && (
-            <div className="mt-3 pt-3 border-t border-[#DFE1E6] flex flex-wrap gap-2">
+        {/* Content */}
+        <div className="px-5 pt-3 pb-5">
+          {/* Address */}
+          <div className="flex items-start gap-1.5">
+            <MapPin className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+            <h2 className="flex-1 font-semibold text-foreground leading-snug group-hover/card:text-primary transition-colors">
+              {plot.address}
+            </h2>
+            <ArrowUpRight className="size-4 text-muted-foreground shrink-0 translate-y-0 opacity-0 group-hover/card:opacity-100 group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5 transition-all" />
+          </div>
+
+          {plot.notes && (
+            <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {plot.notes}
+            </p>
+          )}
+
+          {/* Meta row */}
+          <div className="mt-4 flex items-center gap-3 text-sm">
+            {plot.price_usd_per_100sqm != null && (
+              <span className="font-medium text-foreground tabular-nums">
+                ${plot.price_usd_per_100sqm.toLocaleString('en')}
+                <span className="text-muted-foreground text-xs font-normal ml-1">/ 100 м²</span>
+              </span>
+            )}
+          </div>
+
+          {/* Bottom row: legal + infra */}
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-3">
+            {plot.legal_clearance === true ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                <CheckCircle2 className="size-3.5" />
+                Красная книга
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                <XCircle className="size-3.5" />
+                Без кр. книги
+              </span>
+            )}
+
+            <div className="flex items-center gap-1 text-muted-foreground">
               {INFRA_ITEMS.map(({ key, icon: Icon, label }) => {
                 const val = plot[key]
-                const color = val === true ? '#579DFF' : '#DFE1E6'
                 return (
                   <span
                     key={key}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{
-                      backgroundColor: val === true ? '#E9F2FF' : '#F1F2F4',
-                      color: val === true ? '#0052CC' : '#97A0AF',
-                      textDecoration: val === false ? 'line-through' : undefined,
-                    }}
+                    title={label}
+                    className={
+                      val === true
+                        ? 'text-accent'
+                        : 'text-border'
+                    }
                   >
-                    <Icon className="w-3 h-3" style={{ color }} />
-                    {label}
+                    <Icon className="size-4" />
                   </span>
                 )
               })}
+              {infraCount > 0 && (
+                <span className="ml-1 text-xs font-medium text-foreground tabular-nums">
+                  {infraCount}/4
+                </span>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </Link>
     </li>
   )
 }
