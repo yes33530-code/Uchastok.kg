@@ -77,10 +77,10 @@ export function ListingRow({ plot }: { plot: ListingPlot }) {
               {plot.size_sotok}
             </p>
             <p
-              className="mt-1 text-[11px] font-semibold uppercase tracking-wider bg-clip-text text-transparent"
+              className="mt-1 text-[10px] font-bold uppercase tracking-wide bg-clip-text text-transparent"
               style={{
                 backgroundImage:
-                  'linear-gradient(180deg, #9ca3af 0%, #e5e7eb 45%, #f3f4f6 55%, #6b7280 100%)',
+                  'linear-gradient(180deg, #1e293b 0%, #64748b 45%, #cbd5e1 55%, #334155 100%)',
               }}
             >
               {sotokForm(plot.size_sotok)}
