@@ -15,7 +15,6 @@ interface Props {
   durationMonths: number | null
   snapshot: Omit<CalculatorSnapshot, 'id' | 'plot_id' | 'updated_at'> | null
   userId: string
-  dark?: boolean
 }
 
 function snapshotToInputs(
@@ -37,7 +36,7 @@ function snapshotToInputs(
   }
 }
 
-export function ProfitCalculator({ plotId, ownerSharePct, durationMonths, snapshot, userId, dark }: Props) {
+export function ProfitCalculator({ plotId, ownerSharePct, durationMonths, snapshot, userId }: Props) {
   const [inputs, setInputs] = useState<CalcInputs>(() =>
     snapshotToInputs(snapshot, ownerSharePct, durationMonths)
   )
@@ -87,25 +86,19 @@ export function ProfitCalculator({ plotId, ownerSharePct, durationMonths, snapsh
     }
   }
 
-  const d = dark ?? false
-
-  const labelCls = d ? 'block text-xs text-white/40 mb-1' : 'block text-xs text-gray-500 mb-1'
-  const inputCls = d
-    ? 'w-full rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white/5 border border-white/10 focus:border-indigo-500/50'
-    : 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
-  const groupCls = d
-    ? 'rounded-lg p-3 space-y-1.5 bg-white/5'
-    : 'bg-gray-50 rounded-lg p-3 space-y-1.5'
-  const groupTitleCls = d ? 'text-xs font-medium text-white/30 uppercase tracking-wide' : 'text-xs font-medium text-gray-400 uppercase tracking-wide'
+  const labelCls = 'block text-xs text-muted-foreground mb-1'
+  const inputCls = 'w-full border border-border bg-card text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring placeholder:text-muted-foreground/50 transition-colors'
+  const groupCls = 'bg-muted/50 rounded-lg p-3 space-y-1.5'
+  const groupTitleCls = 'text-xs font-medium text-muted-foreground uppercase tracking-wide'
 
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
-        <h3 className={`text-sm font-semibold ${d ? 'text-white/80' : 'text-gray-900'}`}>Калькулятор доходности</h3>
+        <h3 className="text-sm font-semibold text-foreground">Калькулятор доходности</h3>
         <button
           onClick={saveSnapshot}
           disabled={saving}
-          className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-500 disabled:opacity-50 transition-colors"
+          className="bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Сохранение...' : 'Сохранить расчёт'}
         </button>
@@ -114,59 +107,59 @@ export function ProfitCalculator({ plotId, ownerSharePct, durationMonths, snapsh
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Inputs */}
         <div className="space-y-3">
-          <h4 className={`text-xs font-semibold uppercase tracking-wide ${d ? 'text-white/30' : 'text-gray-500'}`}>Входные данные</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Входные данные</h4>
 
-          <NumInput dark={d} label="Стоимость земли (USD)" value={inputs.land_acquisition_cost} onChange={v => set('land_acquisition_cost', v)} />
-          <NumInput dark={d} label="Стоимость строительства (USD/м²)" value={inputs.construction_cost_per_sqm} onChange={v => set('construction_cost_per_sqm', v)} />
-          <NumInput dark={d} label="Общая площадь застройки (м²)" value={inputs.total_buildable_area_sqm} onChange={v => set('total_buildable_area_sqm', v)} />
+          <NumInput label="Стоимость земли (USD)" value={inputs.land_acquisition_cost} onChange={v => set('land_acquisition_cost', v)} />
+          <NumInput label="Стоимость строительства (USD/м²)" value={inputs.construction_cost_per_sqm} onChange={v => set('construction_cost_per_sqm', v)} />
+          <NumInput label="Общая площадь застройки (м²)" value={inputs.total_buildable_area_sqm} onChange={v => set('total_buildable_area_sqm', v)} />
 
           <div>
             <label className={labelCls}>
               Доля собственника (%) <Lock className="inline w-3 h-3 ml-1 opacity-50" />
             </label>
-            <div className={`w-full rounded-lg px-3 py-2 text-sm ${d ? 'bg-white/5 border border-white/10 text-white/40' : 'border border-gray-200 bg-gray-50 text-gray-500'}`}>
+            <div className="w-full rounded-lg px-3 py-2 text-sm border border-border bg-muted/40 text-muted-foreground">
               {ownerSharePct}%
             </div>
           </div>
 
-          <NumInput dark={d} label="Средняя цена продажи (USD/м²)" value={inputs.avg_sale_price_per_sqm} onChange={v => set('avg_sale_price_per_sqm', v)} />
-          <NumInput dark={d} label="Ставка финансирования (% годовых)" value={inputs.financing_rate_pct} onChange={v => set('financing_rate_pct', v)} step={0.5} />
-          <NumInput dark={d} label="Налоговая ставка (%)" value={inputs.tax_rate_pct} onChange={v => set('tax_rate_pct', v)} step={0.5} />
-          <NumInput dark={d} label="Резерв на непредвиденное (%)" value={inputs.contingency_pct} onChange={v => set('contingency_pct', v)} step={0.5} />
-          <NumInput dark={d} label="Длительность проекта (мес.)" value={inputs.project_duration_months} onChange={v => set('project_duration_months', v)} step={1} />
+          <NumInput label="Средняя цена продажи (USD/м²)" value={inputs.avg_sale_price_per_sqm} onChange={v => set('avg_sale_price_per_sqm', v)} />
+          <NumInput label="Ставка финансирования (% годовых)" value={inputs.financing_rate_pct} onChange={v => set('financing_rate_pct', v)} step={0.5} />
+          <NumInput label="Налоговая ставка (%)" value={inputs.tax_rate_pct} onChange={v => set('tax_rate_pct', v)} step={0.5} />
+          <NumInput label="Резерв на непредвиденное (%)" value={inputs.contingency_pct} onChange={v => set('contingency_pct', v)} step={0.5} />
+          <NumInput label="Длительность проекта (мес.)" value={inputs.project_duration_months} onChange={v => set('project_duration_months', v)} step={1} />
         </div>
 
         {/* Outputs */}
         <div className="space-y-2">
-          <h4 className={`text-xs font-semibold uppercase tracking-wide mb-3 ${d ? 'text-white/30' : 'text-gray-500'}`}>Результат</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-wide mb-3 text-muted-foreground">Результат</h4>
 
           <div className={groupCls}>
             <p className={groupTitleCls}>Площадь</p>
-            <OutputRow dark={d} label="Доля собственника (м²)" value={formatSqm(outputs.owner_share_deduction_sqm)} />
-            <OutputRow dark={d} label="Эффективная площадь продаж" value={formatSqm(outputs.effective_sellable_area_sqm)} highlight />
+            <OutputRow label="Доля собственника (м²)" value={formatSqm(outputs.owner_share_deduction_sqm)} />
+            <OutputRow label="Эффективная площадь продаж" value={formatSqm(outputs.effective_sellable_area_sqm)} highlight />
           </div>
 
           <div className={groupCls}>
             <p className={groupTitleCls}>Затраты</p>
-            <OutputRow dark={d} label="Строительство" value={formatUSD(outputs.construction_total)} />
-            <OutputRow dark={d} label="Финансирование" value={formatUSD(outputs.financing_cost)} />
-            <OutputRow dark={d} label="Резерв" value={formatUSD(outputs.contingency_amount)} />
-            <OutputRow dark={d} label="Итого затраты" value={formatUSD(outputs.total_development_cost)} highlight />
+            <OutputRow label="Строительство" value={formatUSD(outputs.construction_total)} />
+            <OutputRow label="Финансирование" value={formatUSD(outputs.financing_cost)} />
+            <OutputRow label="Резерв" value={formatUSD(outputs.contingency_amount)} />
+            <OutputRow label="Итого затраты" value={formatUSD(outputs.total_development_cost)} highlight />
           </div>
 
           <div className={groupCls}>
             <p className={groupTitleCls}>Выручка и прибыль</p>
-            <OutputRow dark={d} label="Выручка" value={formatUSD(outputs.total_projected_revenue)} />
-            <OutputRow dark={d} label="Валовая прибыль" value={formatUSD(outputs.gross_profit)} />
-            <OutputRow dark={d} label="Чистая прибыль" value={formatUSD(outputs.net_profit)} highlight positive={outputs.net_profit > 0} />
+            <OutputRow label="Выручка" value={formatUSD(outputs.total_projected_revenue)} />
+            <OutputRow label="Валовая прибыль" value={formatUSD(outputs.gross_profit)} />
+            <OutputRow label="Чистая прибыль" value={formatUSD(outputs.net_profit)} highlight positive={outputs.net_profit > 0} />
           </div>
 
           <div className={groupCls}>
             <p className={groupTitleCls}>Метрики</p>
-            <OutputRow dark={d} label="ROI" value={formatPct(outputs.roi_pct)} positive={outputs.roi_pct > 0} />
-            <OutputRow dark={d} label="IRR (ежегодный)" value={formatPct(outputs.irr_pct)} />
-            <OutputRow dark={d} label="Аннуализированный доход" value={formatPct(outputs.annualized_return_pct)} />
-            <OutputRow dark={d} label="Break-even (USD/м²)" value={formatUSD(outputs.breakeven_price_per_sqm)} />
+            <OutputRow label="ROI" value={formatPct(outputs.roi_pct)} positive={outputs.roi_pct > 0} />
+            <OutputRow label="IRR (ежегодный)" value={formatPct(outputs.irr_pct)} />
+            <OutputRow label="Аннуализированный доход" value={formatPct(outputs.annualized_return_pct)} />
+            <OutputRow label="Break-even (USD/м²)" value={formatUSD(outputs.breakeven_price_per_sqm)} />
           </div>
         </div>
       </div>
@@ -174,49 +167,44 @@ export function ProfitCalculator({ plotId, ownerSharePct, durationMonths, snapsh
   )
 }
 
-function NumInput({ label, value, onChange, step = 1, dark }: {
+function NumInput({ label, value, onChange, step = 1 }: {
   label: string
   value: number
   onChange: (v: number) => void
   step?: number
-  dark?: boolean
 }) {
   return (
     <div>
-      <label className={`block text-xs mb-1 ${dark ? 'text-white/40' : 'text-gray-500'}`}>{label}</label>
+      <label className="block text-xs mb-1 text-muted-foreground">{label}</label>
       <input
         type="number"
         step={step}
         value={value}
         onChange={e => onChange(parseFloat(e.target.value) || 0)}
-        className={dark
-          ? 'w-full rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white/5 border border-white/10 focus:border-indigo-500/50'
-          : 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
-        }
+        className="w-full border border-border bg-card text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors"
       />
     </div>
   )
 }
 
-function OutputRow({ label, value, highlight, positive, dark }: {
+function OutputRow({ label, value, highlight, positive }: {
   label: string
   value: string
   highlight?: boolean
   positive?: boolean
-  dark?: boolean
 }) {
   const valColor = positive === true
-    ? 'text-green-400'
+    ? 'text-primary'
     : positive === false
-    ? 'text-red-400'
+    ? 'text-destructive'
     : highlight
-    ? (dark ? 'text-white' : 'text-gray-900')
-    : (dark ? 'text-white/60' : 'text-gray-700')
+    ? 'text-foreground'
+    : 'text-foreground/80'
 
   return (
     <div className="flex justify-between items-center text-sm gap-2">
-      <span className={`text-xs ${dark ? 'text-white/40' : 'text-gray-600'}`}>{label}</span>
-      <span className={`font-semibold text-right ${valColor}`}>{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={`font-semibold text-right tabular-nums ${valColor}`}>{value}</span>
     </div>
   )
 }

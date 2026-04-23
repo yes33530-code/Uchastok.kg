@@ -119,12 +119,12 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
       <div className="flex flex-wrap items-center gap-2">
         {/* Address search */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Адрес или контакт..."
-            className="pl-8 pr-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 outline-none focus:border-indigo-500/50 w-56"
+            className="pl-8 pr-3 py-1.5 text-sm bg-[var(--list)] border border-border rounded-md text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 w-56"
           />
         </div>
 
@@ -149,7 +149,7 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
             placeholder="Сот. от"
             className={`${selectCls} w-24`}
           />
-          <span className="text-white/20 text-xs">—</span>
+          <span className="text-muted-foreground/60 text-xs">—</span>
           <input
             value={maxSize}
             onChange={e => setMaxSize(e.target.value)}
@@ -168,7 +168,7 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
             placeholder="Оц. от"
             className={`${selectCls} w-22`}
           />
-          <span className="text-white/20 text-xs">—</span>
+          <span className="text-muted-foreground/60 text-xs">—</span>
           <input
             value={maxScore}
             onChange={e => setMaxScore(e.target.value)}
@@ -187,7 +187,7 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
             className={`${selectCls} w-36`}
             title="Добавлен с"
           />
-          <span className="text-white/20 text-xs">—</span>
+          <span className="text-muted-foreground/60 text-xs">—</span>
           <input
             type="date"
             value={dateTo}
@@ -203,15 +203,15 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
             type="checkbox"
             checked={legalOnly}
             onChange={e => setLegalOnly(e.target.checked)}
-            className="w-3.5 h-3.5 rounded accent-indigo-500"
+            className="w-3.5 h-3.5 rounded accent-primary"
           />
-          <span className="text-xs text-white/50">Красная книга</span>
+          <span className="text-xs text-foreground/70">Красная книга</span>
         </label>
 
         {hasFilter && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-white/40 hover:text-white/70 rounded-lg hover:bg-white/5 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
           >
             <X className="w-3.5 h-3.5" /> Сбросить
           </button>
@@ -220,31 +220,31 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
 
       {/* Result count */}
       {hasFilter && (
-        <p className="text-xs text-white/30">
+        <p className="text-xs text-muted-foreground">
           Показано: {filtered.length} из {plots.length}
         </p>
       )}
 
-      {/* Table */}
-      <div className="bg-[#142a50] border border-white/10 rounded-xl overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Адрес</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Площадь</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Цена / 100м²</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Доля</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Стадия</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Инфра</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Оценка</th>
-              <th className="text-left px-4 py-3 font-medium text-white/40 text-xs uppercase tracking-wide">Добавлен</th>
-              <th className="px-4 py-3" />
+      {/* Table — Trello board-list density */}
+      <div className="bg-[var(--list)] border border-border rounded-md overflow-hidden overflow-x-auto ring-1 ring-black/30">
+        <table className="w-full text-[13px] min-w-[640px]">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Адрес</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Площадь</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Цена / 100м²</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Доля</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Стадия</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Инфра</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Оценка</th>
+              <th className="text-left px-3 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wide">Добавлен</th>
+              <th className="px-3 py-2" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-white/30">
+                <td colSpan={9} className="text-center py-12 text-muted-foreground">
                   {hasFilter ? 'Нет результатов по фильтрам' : showArchived ? 'Нет архивных участков' : 'Нет участков. Добавьте первый!'}
                 </td>
               </tr>
@@ -252,23 +252,27 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
             {filtered.map(plot => {
               const stage = stages.find(s => s.id === plot.stage_id) ?? null
               return (
-                <tr key={plot.id} className="group border-t border-white/5 hover:bg-white/3 transition-colors">
-                  <td className="px-4 py-3">
-                    <Link href={`/plots/${plot.id}`} className="font-medium text-white/80 hover:text-indigo-400 transition-colors">
+                <tr key={plot.id} className="group border-t border-border/50 hover:bg-white/[0.04] transition-colors">
+                  <td className="px-3 py-2">
+                    <Link href={`/plots/${plot.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
                       {plot.address}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-white/50">{formatSotok(plot.size_sotok)}</td>
-                  <td className="px-4 py-3 text-white/50">{formatUSD(plot.price_usd_per_100sqm)}</td>
-                  <td className="px-4 py-3 text-white/50">{plot.owner_share_pct}%</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2 text-foreground/70 tabular-nums">{formatSotok(plot.size_sotok)}</td>
+                  <td className="px-3 py-2 text-foreground/70 tabular-nums">{formatUSD(plot.price_usd_per_100sqm)}</td>
+                  <td className="px-3 py-2 text-foreground/70 tabular-nums">{plot.owner_share_pct}%</td>
+                  <td className="px-3 py-2">
                     {stage ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: stage.color }}>
+                      <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground/80"
+                        title={stage.name}
+                      >
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
                         {stage.name}
                       </span>
-                    ) : <span className="text-white/20">—</span>}
+                    ) : <span className="text-muted-foreground/60">—</span>}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
                       {([
                         { val: plot.infra_electricity, icon: Zap },
@@ -276,17 +280,17 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
                         { val: plot.infra_gas,         icon: Flame },
                         { val: plot.infra_sewer,        icon: Waves },
                       ] as const).map(({ val, icon: Icon }, i) => (
-                        <Icon key={i} className={`w-3.5 h-3.5 ${val === true ? 'text-emerald-400' : val === false ? 'text-white/15' : 'text-white/10'}`} />
+                        <Icon key={i} className={`w-3.5 h-3.5 ${val === true ? 'text-primary' : 'text-muted-foreground/25'}`} />
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3"><ScoreBadge score={plot.score} size="sm" /></td>
-                  <td className="px-4 py-3 text-white/30">{formatDate(plot.created_at)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2"><ScoreBadge score={plot.score} size="sm" /></td>
+                  <td className="px-3 py-2 text-muted-foreground tabular-nums">{formatDate(plot.created_at)}</td>
+                  <td className="px-3 py-2">
                     <button
                       onClick={() => handleDelete(plot)}
                       disabled={deletingId === plot.id}
-                      className="p-1.5 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40 opacity-0 group-hover:opacity-100"
+                      className="p-1.5 rounded text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40 opacity-0 group-hover:opacity-100"
                       title="Удалить"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -302,4 +306,4 @@ export function PlotsTable({ initialPlots, stages, showArchived }: Props) {
   )
 }
 
-const selectCls = 'px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg text-white/60 outline-none focus:border-indigo-500/50 [&>option]:bg-[#112545]'
+const selectCls = 'px-3 py-1.5 text-sm bg-[var(--list)] border border-border rounded-md text-foreground/80 outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 [&>option]:bg-popover [&>option]:text-foreground'

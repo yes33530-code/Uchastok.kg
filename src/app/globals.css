@@ -98,7 +98,7 @@ body {
   --chart-4: oklch(0.750 0.13 70);           /* amber    */
   --chart-5: oklch(0.551 0.027 264.36);      /* slate-500 */
 
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 
   /* sidebar (unused on public pages, kept for app shell) */
   --sidebar: oklch(0.985 0.005 180);
@@ -111,38 +111,99 @@ body {
   --sidebar-ring: oklch(0.511 0.096 186.39);
 }
 
+/*
+ * Full-Trello dark-blue palette (Atlassian-style, v4).
+ * Applied to the /(app)/ route group via <div class="dark"> — public
+ * listings stay on the teal/light palette.
+ *
+ * Hue rotated to blue (~253). Lists are DARKER than the board so they
+ * read as a sunken channel; cards sit on top as a lighter lifted plane.
+ *
+ *   --sidebar     #0E1A2A  top bar — deepest blue, near-black
+ *   --list        #0E203E  list (column) — darker than board
+ *   --background  #14304F  board / page background — medium blue
+ *   --popover     #1E355A  dropdowns, menus
+ *   --card        #2A4168  floating cards — lifted lighter tile
+ *   --muted       #3A5178  hover-card, input fill
+ *
+ *   --primary     #579DFF  Trello blue — CTAs, active nav
+ *   --accent      #9F8FEF  purple — secondary accents, avatars
+ *   --destructive #F87168
+ *
+ *   --foreground  #E5E9EB  primary text
+ *   --muted-fg    #9FADBC  secondary text
+ *   --border      rgba(255,255,255,0.08)
+ */
 .dark {
-  --background: oklch(0.20 0.03 200);
-  --foreground: oklch(0.96 0.015 180);
-  --card: oklch(0.25 0.035 200);
-  --card-foreground: oklch(0.96 0.015 180);
-  --popover: oklch(0.25 0.035 200);
-  --popover-foreground: oklch(0.96 0.015 180);
-  --primary: oklch(0.704 0.14 182.51);
-  --primary-foreground: oklch(0.20 0.03 200);
-  --secondary: oklch(0.35 0.05 200);
-  --secondary-foreground: oklch(0.96 0.015 180);
-  --muted: oklch(0.30 0.03 200);
-  --muted-foreground: oklch(0.72 0.02 200);
-  --accent: oklch(0.60 0.13 240);
+  --background: oklch(0.300 0.060 253);          /* ~#14304F  board blue */
+  --foreground: oklch(0.925 0.006 228);
+
+  /* --list: custom token for list/column/table surface.
+     Consumed in kanban + tables via bg-[var(--list)]. Darker than bg. */
+  --list: oklch(0.240 0.050 253);                /* ~#132847  sunken */
+
+  --card: oklch(0.305 0.050 253);                /* ~#1B3354  subtle lift (resting) */
+  --card-foreground: oklch(0.925 0.006 228);
+  --popover: oklch(0.360 0.055 253);             /* ~#244168  menus */
+  --popover-foreground: oklch(0.925 0.006 228);
+
+  --primary: oklch(0.715 0.148 253);             /* #579DFF  Trello blue */
+  --primary-foreground: oklch(0.230 0.012 232);
+
+  --secondary: oklch(0.400 0.055 253);           /* ~#30486E */
+  --secondary-foreground: oklch(0.925 0.006 228);
+
+  --accent: oklch(0.720 0.128 297);              /* #9F8FEF  purple */
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.704 0.191 22.22);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.704 0.14 182.51);
-  --chart-1: oklch(0.704 0.14 182.51);
-  --chart-2: oklch(0.60 0.13 240);
-  --chart-3: oklch(0.511 0.096 186.39);
-  --chart-4: oklch(0.75 0.13 70);
-  --chart-5: oklch(0.72 0.02 200);
-  --sidebar: oklch(0.25 0.035 200);
-  --sidebar-foreground: oklch(0.96 0.015 180);
-  --sidebar-primary: oklch(0.704 0.14 182.51);
-  --sidebar-primary-foreground: oklch(0.20 0.03 200);
-  --sidebar-accent: oklch(0.30 0.03 200);
-  --sidebar-accent-foreground: oklch(0.96 0.015 180);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.704 0.14 182.51);
+
+  --muted: oklch(0.385 0.055 253);               /* ~#2D4569  hover on card */
+  --muted-foreground: oklch(0.740 0.022 245);    /* ~#A1B0C4 */
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.715 0.148 253);
+
+  --destructive: oklch(0.720 0.180 21);          /* #F87168 */
+
+  /* charts — Atlassian-inspired vivid accents */
+  --chart-1: oklch(0.715 0.148 253);             /* blue   */
+  --chart-2: oklch(0.820 0.160 158);             /* green  */
+  --chart-3: oklch(0.720 0.128 297);             /* purple */
+  --chart-4: oklch(0.830 0.150 85);              /* yellow */
+  --chart-5: oklch(0.750 0.140 35);              /* orange */
+
+  /* sidebar — the top bar, darker than list for a near-black strip */
+  --sidebar: oklch(0.180 0.040 253);             /* ~#0E1A2A */
+  --sidebar-foreground: oklch(0.925 0.006 228);
+  --sidebar-primary: oklch(0.715 0.148 253);
+  --sidebar-primary-foreground: oklch(0.230 0.012 232);
+  --sidebar-accent: oklch(0.310 0.015 232);
+  --sidebar-accent-foreground: oklch(0.925 0.006 228);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.715 0.148 253);
+}
+
+/*
+ * Trello card-chrome utility.
+ * Floating card on a list — base shadow, hover raise, brighten bg.
+ *   .trello-tile       — the hover-raise + shadow pattern
+ *   .trello-tile-static — same visual, no raise (for drag-overlay, etc.)
+ */
+@layer components {
+  .trello-tile {
+    background-color: var(--card);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+    transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  }
+  .trello-tile:hover {
+    background-color: color-mix(in oklab, var(--card) 70%, var(--muted) 30%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  .trello-tile-static {
+    background-color: var(--card);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  }
 }
 
 @layer base {

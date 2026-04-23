@@ -23,12 +23,11 @@ export function PublishButton({ plotId, published }: { plotId: string; published
     <button
       onClick={toggle}
       disabled={loading}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+      className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] font-medium border transition-colors disabled:opacity-50 ${
         published
-          ? 'text-emerald-400 hover:bg-emerald-500/10'
-          : 'text-white/60 hover:text-white/90 hover:bg-white/5'
+          ? 'text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10'
+          : 'text-muted-foreground border-border hover:text-foreground hover:bg-muted'
       }`}
-      style={{ border: `1px solid ${published ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.1)'}` }}
     >
       {published ? <Globe className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
       {published ? 'Опубликовано' : 'Опубликовать'}

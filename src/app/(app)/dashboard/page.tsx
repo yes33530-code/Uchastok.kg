@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { Topbar } from '@/components/layout/topbar'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 
 export const metadata = { title: 'Дашборд — Uchastok.kg' }
@@ -15,7 +14,6 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Topbar title="Дашборд" />
       <main className="flex-1 overflow-y-auto p-3 md:p-6">
         <Suspense>
           <DashboardClient initialPlots={plots ?? []} stages={stages ?? []} />

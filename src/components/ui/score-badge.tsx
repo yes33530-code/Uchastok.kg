@@ -1,35 +1,84 @@
 import { cn } from '@/lib/utils'
 import { getScoreColor } from '@/types/scoring'
 
-const colorMap = {
-  red: 'bg-red-100 text-red-700 border-red-300',
-  orange: 'bg-orange-100 text-orange-700 border-orange-300',
-  yellow: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  green: 'bg-green-100 text-green-700 border-green-300',
-  'dark-green': 'bg-emerald-100 text-emerald-800 border-emerald-400',
+/**
+ * Score displayed as a donut ring with the number in the middle.
+ * Track is dim, fill traces the score as a fraction of 100, color-graded
+ * by `getScoreColor`. Empty scores render a dashed track with an em-dash.
+ */
+
+const SIZES = {
+  sm: { box: 30, stroke: 2.5, font: 11, r: 12 },
+  md: { box: 40, stroke: 3, font: 13, r: 16 },
+  lg: { box: 54, stroke: 3.5, font: 16, r: 22 },
+} as const
+
+// Colored stroke values — vivid on dark/blue bg, graded by score band.
+const STROKE: Record<ReturnType<typeof getScoreColor>, string> = {
+  red:          '#F87168',
+  orange:       '#F5A25D',
+  yellow:       '#E9C75A',
+  green:        '#4BCE97',
+  'dark-green': '#22A06B',
 }
 
-interface ScoreBadgeProps {
+interface Props {
   score: number | null
-  size?: 'sm' | 'md' | 'lg'
+  size?: keyof typeof SIZES
   className?: string
 }
 
-export function ScoreBadge({ score, size = 'md', className }: ScoreBadgeProps) {
-  const color = getScoreColor(score)
+export function ScoreBadge({ score, size = 'md', className }: Props) {
+  const { box, stroke, font, r } = SIZES[size]
+  const cx = box / 2
+  const circumference = 2 * Math.PI * r
+  const pct = score == null ? 0 : Math.max(0, Math.min(100, score))
+  const dashOffset = circumference * (1 - pct / 100)
+  const color = STROKE[getScoreColor(score)]
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center justify-center font-semibold rounded-full border',
-        size === 'sm' && 'text-xs px-2 py-0.5 min-w-[2rem]',
-        size === 'md' && 'text-sm px-2.5 py-1 min-w-[2.5rem]',
-        size === 'lg' && 'text-base px-3 py-1.5 min-w-[3rem]',
-        colorMap[color],
-        className
-      )}
+    <div
+      className={cn('relative inline-flex items-center justify-center shrink-0', className)}
+      style={{ width: box, height: box }}
+      title={score == null ? 'Нет оценки' : `${score} / 100`}
     >
-      {score === null ? '–' : score}
-    </span>
+      <svg width={box} height={box} className="absolute inset-0 -rotate-90" aria-hidden>
+        {/* Track */}
+        <circle
+          cx={cx}
+          cy={cx}
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={stroke}
+          className="text-white/10"
+          strokeDasharray={score == null ? `2 3` : undefined}
+        />
+        {/* Progress */}
+        {score != null && pct > 0 && (
+          <circle
+            cx={cx}
+            cy={cx}
+            r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            style={{ transition: 'stroke-dashoffset 300ms ease' }}
+          />
+        )}
+      </svg>
+      <span
+        className="relative font-bold tabular-nums leading-none"
+        style={{
+          color: score == null ? 'var(--muted-foreground)' : color,
+          fontSize: font,
+        }}
+      >
+        {score == null ? '–' : score}
+      </span>
+    </div>
   )
 }

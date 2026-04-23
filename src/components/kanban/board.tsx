@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 import {
   DndContext,
   DragOverlay,
@@ -22,13 +23,33 @@ import { createClient } from '@/lib/supabase/client'
 import { KanbanColumn } from './column'
 import { KanbanCard } from './draggable-card'
 import { CardDrawer } from './card-drawer'
+import { BoardToolbar, emptyFilter, type BoardFilter } from './board-toolbar'
 import type { KanbanStage, Plot } from '@/types/plot'
+
+type Member = { id: string; full_name: string | null; avatar_url: string | null }
+type LabelDef = { name: string; color: string }
 
 interface BoardProps {
   stages: KanbanStage[]
   initialPlots: Plot[]
   userId: string
   fileCounts: Record<string, number>
+  members: Member[]
+  labelDefs: LabelDef[]
+}
+
+function plotMatches(plot: Plot, filter: BoardFilter): boolean {
+  if (filter.zone && plot.zone !== filter.zone) return false
+  if (filter.minScore) {
+    const min = parseInt(filter.minScore)
+    if (Number.isFinite(min) && (plot.score ?? 0) < min) return false
+  }
+  if (filter.labels.length > 0) {
+    const raw = plot.labels
+    const names = Array.isArray(raw) ? (raw as { name: string }[]).map(l => l.name) : []
+    if (!filter.labels.some(n => names.includes(n))) return false
+  }
+  return true
 }
 
 const kanbanCollision: CollisionDetection = (args) => {
@@ -37,7 +58,7 @@ const kanbanCollision: CollisionDetection = (args) => {
   return closestCenter(args)
 }
 
-export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardProps) {
+export function KanbanBoard({ stages, initialPlots, userId, fileCounts, members, labelDefs }: BoardProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
@@ -50,6 +71,7 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
   const [activeType, setActiveType] = useState<'card' | 'column' | null>(null)
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set())
   const [openPlotId, setOpenPlotId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<BoardFilter>(emptyFilter)
 
   // Open drawer when ?open=<plotId> is in the URL (e.g. from search)
   useEffect(() => {
@@ -62,6 +84,38 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
   const [addingStage, setAddingStage] = useState(false)
   const [newStageName, setNewStageName] = useState('')
   const [addingStageLoading, setAddingStageLoading] = useState(false)
+
+  // Click-and-drag horizontal scroll — Trello-style board panning.
+  // Activates only when the pointerdown lands on the scroller itself,
+  // not on a card or column (those are handled by dnd-kit).
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const dragScrollRef = useRef({ active: false, startX: 0, startScroll: 0 })
+  const [isDragScrolling, setIsDragScrolling] = useState(false)
+
+  function onScrollerPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.target !== e.currentTarget) return
+    if (e.button !== 0) return
+    dragScrollRef.current = {
+      active: true,
+      startX: e.clientX,
+      startScroll: e.currentTarget.scrollLeft,
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setIsDragScrolling(true)
+  }
+
+  function onScrollerPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragScrollRef.current.active || !scrollerRef.current) return
+    const dx = dragScrollRef.current.startX - e.clientX
+    scrollerRef.current.scrollLeft = dragScrollRef.current.startScroll + dx
+  }
+
+  function onScrollerPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragScrollRef.current.active) return
+    dragScrollRef.current.active = false
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch { /* ignore */ }
+    setIsDragScrolling(false)
+  }
 
   function handleOptimisticAdd(plot: Plot) {
     setPlotsByStage(prev => addPlotToMap(prev, plot))
@@ -249,37 +303,58 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
   }
 
   if (!mounted) return (
-    <div className="flex gap-4 h-full overflow-x-auto pb-4">
-      {stageList.map(stage => (
-        <div key={stage.id} className="w-64 shrink-0 rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
-          <div
-            className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/40"
-            style={{ borderTop: `3px solid ${stage.color}` }}
-          >
-            <span className="text-sm font-semibold text-foreground">{stage.name}</span>
-            <span className="text-xs font-medium rounded-full px-1.5 py-0.5 text-white tabular-nums" style={{ backgroundColor: stage.color }}>0</span>
+    <div className="flex flex-col h-full">
+      <BoardToolbar
+        boardName="Доска"
+        members={members}
+        labelDefs={labelDefs}
+        filter={filter}
+        onFilterChange={setFilter}
+      />
+      <div className="flex gap-2 flex-1 overflow-x-auto pb-4 px-2 pt-2">
+        {stageList.map(stage => (
+          <div key={stage.id} className="w-[272px] shrink-0 rounded-[12px] bg-[var(--list)] overflow-hidden">
+            <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
+              <span className="flex-1 text-[14px] font-semibold text-foreground truncate">{stage.name}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 
   return (
-    <>
+    <div className="flex flex-col h-full">
+      <BoardToolbar
+        boardName="Доска"
+        members={members}
+        labelDefs={labelDefs}
+        filter={filter}
+        onFilterChange={setFilter}
+      />
       <DndContext
         sensors={sensors}
         collisionDetection={kanbanCollision}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        {/* Outer SortableContext for columns */}
         <SortableContext items={stageList.map(s => s.id)} strategy={horizontalListSortingStrategy}>
-          <div className="flex gap-4 h-full overflow-x-auto pb-4 items-start">
+          <div
+            ref={scrollerRef}
+            onPointerDown={onScrollerPointerDown}
+            onPointerMove={onScrollerPointerMove}
+            onPointerUp={onScrollerPointerUp}
+            onPointerCancel={onScrollerPointerUp}
+            className={cn(
+              'flex gap-2 flex-1 overflow-x-auto pb-4 px-2 pt-2 items-start select-none',
+              isDragScrolling && 'cursor-grabbing'
+            )}
+          >
             {stageList.map(stage => (
               <KanbanColumn
                 key={stage.id}
                 stage={stage}
-                plots={plotsByStage.get(stage.id) ?? []}
+                plots={(plotsByStage.get(stage.id) ?? []).filter(p => plotMatches(p, filter))}
                 onOpenCard={setOpenPlotId}
                 activeType={activeType}
                 fileCounts={fileCounts}
@@ -289,29 +364,29 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
               />
             ))}
 
-            {/* Add column */}
-            <div className="shrink-0 w-64">
+            {/* Add column — Trello-style translucent tile */}
+            <div className="shrink-0 w-[272px]">
               {addingStage ? (
-                <div className="rounded-xl p-3 space-y-2 bg-card ring-1 ring-foreground/10">
+                <div className="rounded-xl p-2 space-y-2 bg-[var(--list)] ring-1 ring-black/30">
                   <input
                     autoFocus
                     value={newStageName}
                     onChange={e => setNewStageName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleCreateStage(); if (e.key === 'Escape') setAddingStage(false) }}
                     placeholder="Название колонки..."
-                    className="w-full bg-muted/50 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    className="w-full bg-card border border-border rounded-md px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleCreateStage}
                       disabled={addingStageLoading}
-                      className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                      className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium py-1.5 rounded-md transition-colors disabled:opacity-50"
                     >
                       {addingStageLoading ? '…' : 'Добавить'}
                     </button>
                     <button
                       onClick={() => { setAddingStage(false); setNewStageName('') }}
-                      className="px-3 text-muted-foreground hover:text-foreground text-xs rounded-lg hover:bg-muted transition-colors"
+                      className="px-3 text-muted-foreground hover:text-foreground text-xs rounded-md hover:bg-white/[0.06] transition-colors"
                     >
                       Отмена
                     </button>
@@ -320,7 +395,7 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
               ) : (
                 <button
                   onClick={() => setAddingStage(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted bg-card/60 ring-1 ring-border transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium text-muted-foreground hover:text-foreground bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Добавить колонку
@@ -333,12 +408,9 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
         <DragOverlay>
           {activePlot && <KanbanCard plot={activePlot} isDragging fileCounts={fileCounts} />}
           {activeStage && (
-            <div className="w-64 rounded-xl opacity-95 shadow-2xl bg-card ring-1 ring-foreground/15">
-              <div
-                className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/40"
-                style={{ borderTop: `3px solid ${activeStage.color}` }}
-              >
-                <span className="text-sm font-semibold text-foreground">{activeStage.name}</span>
+            <div className="w-[272px] rounded-[12px] opacity-95 shadow-2xl bg-[var(--list)]">
+              <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
+                <span className="text-[14px] font-semibold text-foreground truncate">{activeStage.name}</span>
               </div>
             </div>
           )}
@@ -355,7 +427,7 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
           onPlotRemove={(id) => setPlotsByStage(prev => removePlotFromMap(prev, id))}
         />
       )}
-    </>
+    </div>
   )
 }
 

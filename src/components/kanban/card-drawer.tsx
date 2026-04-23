@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { X, ChevronDown, ChevronUp, Archive, Trash2, Plus } from 'lucide-react'
+import { X, ChevronDown, ChevronUp, Archive, Trash2, Plus, Zap, Droplets, Flame, Waves, CreditCard, Tag, Paperclip, MoveRight, Calculator } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { updatePlot, archivePlot, deletePlot, saveScoringInputs } from '@/actions/plots'
@@ -10,8 +10,8 @@ import { FileAttachments } from '@/components/plots/file-attachments'
 import { ChecklistPanel } from '@/components/automations/checklist-panel'
 import { ActivityPanel } from '@/components/plots/activity-panel'
 import { ScoreBadge } from '@/components/ui/score-badge'
-import { formatDate } from '@/lib/utils'
-import type { Plot, KanbanStage, PlotFile, PlotChecklist, CalculatorSnapshot, ScoringInputs } from '@/types/plot'
+import { formatDate, cn } from '@/lib/utils'
+import type { Plot, KanbanStage, PlotFile, PlotChecklist, CalculatorSnapshot } from '@/types/plot'
 
 interface Props {
   plotId: string
@@ -23,10 +23,10 @@ interface Props {
 }
 
 const INFRA_UTILITIES = [
-  { key: 'light', label: 'Свет',        icon: '⚡', dbField: 'infra_electricity' },
-  { key: 'water', label: 'Вода',        icon: '💧', dbField: 'infra_water' },
-  { key: 'gas',   label: 'Газ',         icon: '🔥', dbField: 'infra_gas' },
-  { key: 'sewer', label: 'Канализация', icon: '🪣', dbField: 'infra_sewer' },
+  { key: 'light', label: 'Свет',        icon: Zap,      dbField: 'infra_electricity' },
+  { key: 'water', label: 'Вода',        icon: Droplets, dbField: 'infra_water' },
+  { key: 'gas',   label: 'Газ',         icon: Flame,    dbField: 'infra_gas' },
+  { key: 'sewer', label: 'Канализация', icon: Waves,    dbField: 'infra_sewer' },
 ] as const
 
 type InfraKey = typeof INFRA_UTILITIES[number]['key']
@@ -35,7 +35,6 @@ function infraToScore(checked: Set<InfraKey>): number {
   return checked.size * 25
 }
 
-/** Build checked set from plot's boolean fields */
 function plotToInfra(plot: Plot): Set<InfraKey> {
   const s = new Set<InfraKey>()
   if (plot.infra_electricity) s.add('light')
@@ -54,9 +53,9 @@ const ZONES = [
 ]
 
 const LABEL_COLORS = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
-  '#f97316', '#eab308', '#22c55e', '#10b981',
-  '#3b82f6', '#06b6d4', '#64748b', '#ffffff',
+  '#0F766E', '#0369A1', '#14B8A6', '#9F8FEF',
+  '#F97316', '#EAB308', '#22C55E', '#10B981',
+  '#EC4899', '#DC2626', '#64748B', '#FFFFFF',
 ]
 
 type LabelItem = { name: string; color: string }
@@ -135,7 +134,6 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
           zone: p.zone ?? '',
           notes: p.notes ?? '',
         })
-        // Parse labels from jsonb
         try {
           const raw = p.labels
           if (Array.isArray(raw)) setLabels(raw as LabelItem[])
@@ -221,7 +219,6 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
     setLabelInput('')
     setLabelPickerOpen(false)
     if (fields && plotRef.current) triggerSave(fields, next)
-    // Save to global definitions if new
     const alreadyGlobal = globalLabels.some(g => g.name === lbl.name && g.color === lbl.color)
     if (!alreadyGlobal) {
       const supabase = createClient()
@@ -277,7 +274,6 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
     }
   }
 
-  // Autosave scoring 1s after change
   const plotIdForScoring = plot?.id
   useEffect(() => {
     if (!plotIdForScoring) return
@@ -298,333 +294,362 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-start justify-center md:pt-6 md:pb-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-4 pb-4 md:pt-10 md:pb-10 bg-black/70 backdrop-blur-[2px] overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="rounded-t-2xl md:rounded-xl shadow-2xl w-full md:max-w-5xl md:mx-4 md:mb-6 md:max-h-[90dvh] flex flex-col"
-        style={{ backgroundColor: '#112545', border: '1px solid rgba(255,255,255,0.08)' }}
+        className="w-full md:max-w-4xl md:mx-4 rounded-lg shadow-2xl bg-card ring-1 ring-white/[0.08] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        {/* Mobile drag handle */}
-        <div className="md:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
-        </div>
-
         {loading ? (
-          <div className="p-16 text-center text-white/30 text-sm">Загрузка...</div>
+          <div className="p-16 text-center text-muted-foreground text-sm">Загрузка...</div>
         ) : !plot || !fields ? (
-          <div className="p-16 text-center text-red-400 text-sm">Ошибка загрузки</div>
+          <div className="p-16 text-center text-destructive text-sm">Ошибка загрузки</div>
         ) : (
           <>
-            {/* Header */}
-            <div className="flex items-center gap-3 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {/* Stage picker */}
-              <div className="relative">
-                <button
-                  onClick={() => setStageOpen(o => !o)}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-white hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: currentStage?.color ?? '#6b7280' }}
-                >
-                  {currentStage?.name ?? 'Без стадии'}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                {stageOpen && (
-                  <div className="absolute top-full left-0 mt-1 rounded-xl shadow-xl z-20 min-w-[200px] py-1" style={{ backgroundColor: '#142a50', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    {stages.map(s => (
-                      <button
-                        key={s.id}
-                        onClick={() => handleStageChange(s.id)}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-white/80 hover:bg-white/5 text-left"
-                      >
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                        {s.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="ml-auto flex items-center gap-2">
-                <ScoreBadge score={plot.score} size="sm" />
-                <span className="text-xs text-white/30">{formatDate(plot.created_at)}</span>
-
-                {/* Archive */}
+            {/* Header — title + subtitle + actions */}
+            <div className="relative px-6 pt-5 pb-4">
+              <div className="absolute top-4 right-4 flex items-center gap-0.5">
                 <button
                   onClick={handleArchive}
                   disabled={archiving}
                   title="В архив"
-                  className="p-1.5 rounded-lg text-white/40 hover:text-amber-400 hover:bg-white/5 transition-colors disabled:opacity-40"
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
                 >
                   <Archive className="w-4 h-4" />
                 </button>
-
-                {/* Delete */}
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
                   title="Удалить"
-                  className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-white/5 transition-colors disabled:opacity-40"
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-
-                <button onClick={onClose} className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/5 transition-colors ml-1">
+                <div className="w-px h-4 bg-border mx-1" />
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
+              <div className="flex items-start gap-3 pr-32">
+                <CreditCard className="w-5 h-5 text-muted-foreground mt-1.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <input
+                    value={fields.address}
+                    onChange={e => setField('address', e.target.value)}
+                    className="w-full text-[20px] font-semibold text-foreground bg-transparent border-0 outline-none focus:bg-muted rounded-md px-2 py-1 -mx-2 transition-colors placeholder:text-muted-foreground/50 leading-tight"
+                    placeholder="Адрес участка"
+                  />
+                  <p className="mt-1.5 text-[13px] text-muted-foreground">
+                    в колонке{' '}
+                    <button
+                      onClick={() => setStageOpen(o => !o)}
+                      className="relative inline-flex items-center gap-1 underline decoration-dotted decoration-muted-foreground/50 underline-offset-2 hover:text-foreground transition-colors"
+                    >
+                      <span
+                        className="inline-block w-2 h-2 rounded-full"
+                        style={{ backgroundColor: currentStage?.color ?? 'var(--muted-foreground)' }}
+                      />
+                      {currentStage?.name ?? 'Без стадии'}
+                    </button>
+                    {stageOpen && (
+                      <span className="absolute z-30">
+                        <span className="fixed inset-0" onClick={() => setStageOpen(false)} />
+                        <span className="relative block mt-1 rounded-md shadow-xl min-w-[200px] py-1 bg-popover ring-1 ring-white/10">
+                          {stages.map(s => (
+                            <button
+                              key={s.id}
+                              onClick={() => handleStageChange(s.id)}
+                              className="w-full flex items-center gap-2.5 px-3 py-1.5 text-[13px] text-foreground hover:bg-muted text-left transition-colors"
+                            >
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                              {s.name}
+                            </button>
+                          ))}
+                        </span>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Body — two-column on desktop */}
-            <div className="flex flex-col md:flex-row md:overflow-hidden flex-1 min-h-0">
-            {/* ── Left column: main content ── */}
-            <div className="flex-1 min-w-0 px-5 py-4 space-y-4 overflow-y-auto max-h-[80dvh] md:max-h-none">
-              {/* Title */}
-              <input
-                value={fields.address}
-                onChange={e => setField('address', e.target.value)}
-                className="w-full text-xl font-bold text-white bg-transparent border-0 outline-none focus:bg-white/5 rounded-lg px-2 py-1 -mx-2 transition-colors placeholder-white/20"
-                placeholder="Адрес участка"
-              />
+            {/* Body — main + action sidebar */}
+            <div className="flex flex-col md:flex-row max-h-[calc(90dvh-5.5rem)] md:overflow-hidden">
+              {/* ── Main column ── */}
+              <div className="flex-1 min-w-0 px-6 pb-6 pt-1 space-y-5 md:overflow-y-auto">
+                {/* Action chip row — Trello card-back top actions */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <ChipBtn icon={Tag} onClick={() => setLabelPickerOpen(o => !o)}>Метка</ChipBtn>
+                  <ChipBtn
+                    icon={Paperclip}
+                    onClick={() => document.getElementById('attachments')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                  >Файл</ChipBtn>
+                  <ChipBtn icon={MoveRight} onClick={() => setStageOpen(o => !o)}>Переместить</ChipBtn>
+                </div>
 
-              {/* Labels */}
-              <div className="flex flex-wrap gap-1.5 items-center">
-                {labels.map((lbl, idx) => (
-                  <span
-                    key={idx}
-                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full text-white"
-                    style={{ backgroundColor: lbl.color + '33', border: `1px solid ${lbl.color}66`, color: lbl.color }}
-                  >
-                    {lbl.name}
-                    <button
-                      onClick={() => removeLabel(idx)}
-                      className="opacity-60 hover:opacity-100 ml-0.5"
-                    >×</button>
-                  </span>
-                ))}
-                <div className="relative">
-                  <button
-                    onClick={() => setLabelPickerOpen(o => !o)}
-                    className="flex items-center gap-1 text-xs text-white/40 hover:text-white/70 px-2 py-1 rounded-full border border-white/10 hover:border-white/20 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" /> Метка
-                  </button>
-                  {labelPickerOpen && (
-                    <div
-                      className="absolute top-full left-0 mt-1 z-20 p-3 rounded-xl shadow-xl w-64"
-                      style={{ backgroundColor: '#142a50', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      {/* Existing global labels */}
-                      {globalLabels.filter(g => !labels.some(l => l.name === g.name && l.color === g.color)).length > 0 && (
-                        <div className="mb-2">
-                          <p className="text-xs text-white/30 mb-1.5">Сохранённые метки</p>
-                          <div className="flex flex-wrap gap-1">
-                            {globalLabels
-                              .filter(g => !labels.some(l => l.name === g.name && l.color === g.color))
-                              .map((g, i) => (
-                                <button
-                                  key={i}
-                                  onClick={() => addLabel(g)}
-                                  className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-opacity hover:opacity-80"
-                                  style={{ backgroundColor: g.color + '33', border: `1px solid ${g.color}66`, color: g.color }}
-                                >
-                                  {g.name}
-                                </button>
-                              ))
-                            }
-                          </div>
-                          <div className="my-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }} />
-                        </div>
+                {/* Metadata row: labels + score + date */}
+                <div className="flex flex-wrap gap-4 items-start">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Метки</h4>
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {labels.length === 0 && (
+                        <span className="text-[12px] text-muted-foreground/60">—</span>
                       )}
-                      <input
-                        autoFocus
-                        value={labelInput}
-                        onChange={e => setLabelInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && addLabel()}
-                        placeholder="Новая метка..."
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/30 outline-none focus:border-white/25 mb-2"
-                      />
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {LABEL_COLORS.map(c => (
+                      {labels.map((lbl, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold h-6 px-2 rounded"
+                          style={{ backgroundColor: lbl.color, color: readableInk(lbl.color) }}
+                        >
+                          {lbl.name}
                           <button
-                            key={c}
-                            onClick={() => setLabelColor(c)}
-                            className="w-5 h-5 rounded-full transition-transform hover:scale-110"
-                            style={{ backgroundColor: c, outline: labelColor === c ? `2px solid ${c}` : 'none', outlineOffset: '2px' }}
-                          />
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => addLabel()}
-                        className="w-full text-xs text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg py-1.5 font-medium transition-colors"
-                      >
-                        Создать метку
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Plot info grid — simplified */}
-              <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <h4 className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-3">Информация</h4>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  <DField label="Площадь (сотки)">
-                    <input type="number" step="0.01" value={fields.size_sotok} onChange={e => setField('size_sotok', e.target.value)} className={inputCls} />
-                  </DField>
-                  <DField label="Цена (USD / 100 м²)">
-                    <input type="number" step="0.01" value={fields.price_usd_per_100sqm} onChange={e => setField('price_usd_per_100sqm', e.target.value)} className={inputCls} placeholder="—" />
-                  </DField>
-                  <div className="col-span-2">
-                    <DField label="Контакт">
-                      <input value={fields.contact} onChange={e => setField('contact', e.target.value)} className={inputCls} placeholder="Имя, телефон, email..." />
-                    </DField>
-                  </div>
-                  <div className="col-span-2 flex items-center gap-2 pt-1">
-                    <input
-                      type="checkbox"
-                      id="drawer_lc"
-                      checked={fields.legal_clearance}
-                      onChange={e => setField('legal_clearance', e.target.checked)}
-                      className="w-4 h-4 rounded accent-indigo-500"
-                    />
-                    <label htmlFor="drawer_lc" className="text-sm text-white/60">Красная книга (право собственности)</label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <h4 className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-2">Описание</h4>
-                <textarea
-                  value={fields.notes}
-                  onChange={e => setField('notes', e.target.value)}
-                  rows={3}
-                  placeholder="Заметки, условия..."
-                  className="w-full text-sm text-white/80 border-0 outline-none resize-none placeholder-white/20 bg-transparent"
-                />
-              </div>
-
-              {/* Calculator + Scoring — collapsible */}
-              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-                <button
-                  onClick={() => setCalcOpen(o => !o)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/3 transition-colors"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                  <span className="text-sm font-semibold text-white/80">Калькулятор доходности</span>
-                  {calcOpen
-                    ? <ChevronUp className="w-4 h-4 text-white/40" />
-                    : <ChevronDown className="w-4 h-4 text-white/40" />
-                  }
-                </button>
-                {calcOpen && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {/* Profit calculator */}
-                    <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <ProfitCalculator
-                        plotId={plot.id}
-                        ownerSharePct={parseFloat(fields.owner_share_pct) || 0}
-                        durationMonths={fields.project_duration_months ? parseInt(fields.project_duration_months) : null}
-                        snapshot={snapshot as Omit<import('@/types/plot').CalculatorSnapshot, 'id' | 'plot_id' | 'updated_at'> | null}
-                        userId={userId}
-                        dark
-                      />
-                    </div>
-                    {/* Scoring inputs — below calculator */}
-                    <div className="p-4">
-                      <h4 className="text-xs font-semibold text-white/30 uppercase tracking-wide mb-3">Параметры оценки</h4>
-                      <div className="space-y-3">
-                        <DField label="Тип зоны">
-                          <select value={fields.zone} onChange={e => setField('zone', e.target.value)} className={inputCls}>
-                            {ZONES.map(z => <option key={z.value} value={z.value}>{z.label}</option>)}
-                          </select>
-                        </DField>
-                        <DSlider label="Качество локации" value={scoringVals.location_quality} onChange={v => setScoringVals(s => ({ ...s, location_quality: v }))} min={0} max={100} />
-                        <DSlider label="Потенциал застройки" value={scoringVals.buildout_potential} onChange={v => setScoringVals(s => ({ ...s, buildout_potential: v }))} min={0} max={100} />
-                        {/* Infrastructure — 4 utility toggles (below other sliders) */}
-                        <div>
-                          <div className="flex justify-between mb-2">
-                            <label className="text-xs text-white/40">Инфраструктура</label>
-                            <span className="text-xs font-medium text-white/70">{infraChecked.size}/4</span>
-                          </div>
-                          <div className="flex gap-2 flex-wrap">
-                            {INFRA_UTILITIES.map(u => {
-                              const on = infraChecked.has(u.key)
-                              return (
+                            onClick={() => removeLabel(idx)}
+                            className="opacity-70 hover:opacity-100 ml-0.5 leading-none"
+                            aria-label="Удалить метку"
+                          >×</button>
+                        </span>
+                      ))}
+                      <div className="relative">
+                        <button
+                          onClick={() => setLabelPickerOpen(o => !o)}
+                          className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground bg-white/[0.06] hover:bg-white/[0.12] transition-colors"
+                          title="Добавить метку"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                        {labelPickerOpen && (
+                          <div className="absolute top-full left-0 mt-1.5 z-20 p-3 rounded-md shadow-xl w-64 bg-popover ring-1 ring-white/10">
+                            {globalLabels.filter(g => !labels.some(l => l.name === g.name && l.color === g.color)).length > 0 && (
+                              <div className="mb-2">
+                                <p className="text-[11px] text-muted-foreground mb-1.5 uppercase tracking-wide font-semibold">Сохранённые</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {globalLabels
+                                    .filter(g => !labels.some(l => l.name === g.name && l.color === g.color))
+                                    .map((g, i) => (
+                                      <button
+                                        key={i}
+                                        onClick={() => addLabel(g)}
+                                        className="text-[11px] px-2 h-5 rounded font-semibold transition-opacity hover:opacity-80"
+                                        style={{ backgroundColor: g.color, color: readableInk(g.color) }}
+                                      >
+                                        {g.name}
+                                      </button>
+                                    ))
+                                  }
+                                </div>
+                                <div className="my-2 border-t border-border" />
+                              </div>
+                            )}
+                            <input
+                              autoFocus
+                              value={labelInput}
+                              onChange={e => setLabelInput(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && addLabel()}
+                              placeholder="Новая метка..."
+                              className={inputCls + ' mb-2'}
+                            />
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {LABEL_COLORS.map(c => (
                                 <button
-                                  key={u.key}
-                                  type="button"
-                                  onClick={async () => {
-                                    const next = new Set(infraChecked)
-                                    if (on) next.delete(u.key); else next.add(u.key)
-                                    setInfraChecked(next)
-                                    setScoringVals(s => ({ ...s, infrastructure_score: infraToScore(next) }))
-                                    if (plotRef.current) {
-                                      await updatePlot(plotRef.current.id, {
-                                        infra_electricity: next.has('light'),
-                                        infra_water:       next.has('water'),
-                                        infra_gas:         next.has('gas'),
-                                        infra_sewer:       next.has('sewer'),
-                                      })
-                                      const { data: updated } = await createClient().from('plots').select('*').eq('id', plotRef.current.id).single()
-                                      if (updated) { setPlot(updated); onPlotUpdate?.(updated) }
-                                    }
-                                  }}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                                  style={{
-                                    backgroundColor: on ? 'rgba(99,102,241,0.25)' : 'rgba(0,0,0,0.35)',
-                                    border: on ? '1px solid rgba(99,102,241,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                                    color: on ? '#a5b4fc' : 'rgba(255,255,255,0.35)',
-                                  }}
-                                >
-                                  <span>{u.icon}</span>
-                                  {u.label}
-                                </button>
-                              )
-                            })}
+                                  key={c}
+                                  onClick={() => setLabelColor(c)}
+                                  className="w-5 h-5 rounded-sm transition-transform hover:scale-110 border border-border"
+                                  style={{ backgroundColor: c, outline: labelColor === c ? `2px solid ${c}` : 'none', outlineOffset: '2px' }}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => addLabel()}
+                              className="w-full text-xs text-primary-foreground bg-primary hover:bg-primary/90 rounded-md py-1.5 font-medium transition-colors"
+                            >
+                              Создать метку
+                            </button>
                           </div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <label className="text-xs text-white/40">Цена vs рынок (% — отриц. = ниже рынка)</label>
-                            <span className="text-xs font-medium text-white/70">{scoringVals.price_vs_market_pct}</span>
-                          </div>
-                          <input
-                            type="number"
-                            step="0.5"
-                            value={scoringVals.price_vs_market_pct}
-                            onChange={e => setScoringVals(s => ({ ...s, price_vs_market_pct: parseFloat(e.target.value) || 0 }))}
-                            className={inputCls}
-                          />
-                        </div>
-                        <p className="text-xs text-white/20 text-right">Сохраняется автоматически</p>
+                        )}
                       </div>
                     </div>
                   </div>
+                  <div className="shrink-0">
+                    <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Оценка</h4>
+                    <ScoreBadge score={plot.score} size="sm" />
+                  </div>
+                  <div className="shrink-0">
+                    <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Добавлен</h4>
+                    <p className="text-[13px] text-foreground tabular-nums">{formatDate(plot.created_at)}</p>
+                  </div>
+                </div>
+
+                {/* Details — plot info grid */}
+                <section>
+                  <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Детали</h4>
+                  <div className="rounded-md p-4 bg-[var(--list)]/60 border border-border">
+                    <div className="grid grid-cols-2 gap-x-5 gap-y-3">
+                      <DField label="Площадь (сотки)">
+                        <input type="number" step="0.01" value={fields.size_sotok} onChange={e => setField('size_sotok', e.target.value)} className={inputCls} />
+                      </DField>
+                      <DField label="Цена (USD / 100 м²)">
+                        <input type="number" step="0.01" value={fields.price_usd_per_100sqm} onChange={e => setField('price_usd_per_100sqm', e.target.value)} className={inputCls} placeholder="—" />
+                      </DField>
+                      <div className="col-span-2">
+                        <DField label="Контакт">
+                          <input value={fields.contact} onChange={e => setField('contact', e.target.value)} className={inputCls} placeholder="Имя, телефон, email..." />
+                        </DField>
+                      </div>
+                      <div className="col-span-2 flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id="drawer_lc"
+                          checked={fields.legal_clearance}
+                          onChange={e => setField('legal_clearance', e.target.checked)}
+                          className="w-4 h-4 rounded accent-primary"
+                        />
+                        <label htmlFor="drawer_lc" className="text-[13px] text-foreground/80">Красная книга (право собственности)</label>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Description */}
+                <section>
+                  <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Описание</h4>
+                  <div className="rounded-md p-3 bg-[var(--list)]/60 border border-border">
+                    <textarea
+                      value={fields.notes}
+                      onChange={e => setField('notes', e.target.value)}
+                      rows={3}
+                      placeholder="Заметки, условия..."
+                      className="w-full text-[13px] text-foreground border-0 outline-none resize-none placeholder:text-muted-foreground/50 bg-transparent"
+                    />
+                  </div>
+                </section>
+
+                {/* Calculator + Scoring — collapsible */}
+                <section>
+                  <div className="rounded-md overflow-hidden border border-border">
+                    <button
+                      onClick={() => setCalcOpen(o => !o)}
+                      className="w-full flex items-center justify-between px-4 py-2.5 bg-[var(--list)]/60 hover:bg-[var(--list)]/90 transition-colors"
+                    >
+                      <span className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                        <Calculator className="w-4 h-4 text-muted-foreground" />
+                        Калькулятор доходности
+                      </span>
+                      {calcOpen
+                        ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                        : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      }
+                    </button>
+                    {calcOpen && (
+                      <div className="border-t border-border">
+                        <div className="p-4 border-b border-border">
+                          <ProfitCalculator
+                            plotId={plot.id}
+                            ownerSharePct={parseFloat(fields.owner_share_pct) || 0}
+                            durationMonths={fields.project_duration_months ? parseInt(fields.project_duration_months) : null}
+                            snapshot={snapshot as Omit<import('@/types/plot').CalculatorSnapshot, 'id' | 'plot_id' | 'updated_at'> | null}
+                            userId={userId}
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-3">Параметры оценки</h5>
+                          <div className="space-y-3">
+                            <DField label="Тип зоны">
+                              <select value={fields.zone} onChange={e => setField('zone', e.target.value)} className={inputCls}>
+                                {ZONES.map(z => <option key={z.value} value={z.value}>{z.label}</option>)}
+                              </select>
+                            </DField>
+                            <DSlider label="Качество локации" value={scoringVals.location_quality} onChange={v => setScoringVals(s => ({ ...s, location_quality: v }))} min={0} max={100} />
+                            <DSlider label="Потенциал застройки" value={scoringVals.buildout_potential} onChange={v => setScoringVals(s => ({ ...s, buildout_potential: v }))} min={0} max={100} />
+                            <div>
+                              <div className="flex justify-between mb-2">
+                                <label className="text-xs text-muted-foreground">Инфраструктура</label>
+                                <span className="text-xs font-medium text-foreground tabular-nums">{infraChecked.size}/4</span>
+                              </div>
+                              <div className="flex gap-2 flex-wrap">
+                                {INFRA_UTILITIES.map(u => {
+                                  const on = infraChecked.has(u.key)
+                                  const Icon = u.icon
+                                  return (
+                                    <button
+                                      key={u.key}
+                                      type="button"
+                                      onClick={async () => {
+                                        const next = new Set(infraChecked)
+                                        if (on) next.delete(u.key); else next.add(u.key)
+                                        setInfraChecked(next)
+                                        setScoringVals(s => ({ ...s, infrastructure_score: infraToScore(next) }))
+                                        if (plotRef.current) {
+                                          await updatePlot(plotRef.current.id, {
+                                            infra_electricity: next.has('light'),
+                                            infra_water:       next.has('water'),
+                                            infra_gas:         next.has('gas'),
+                                            infra_sewer:       next.has('sewer'),
+                                          })
+                                          const { data: updated } = await createClient().from('plots').select('*').eq('id', plotRef.current.id).single()
+                                          if (updated) { setPlot(updated); onPlotUpdate?.(updated) }
+                                        }
+                                      }}
+                                      className={cn(
+                                        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border',
+                                        on
+                                          ? 'bg-accent/10 border-accent/40 text-accent'
+                                          : 'bg-card border-border text-muted-foreground hover:border-ring/60'
+                                      )}
+                                    >
+                                      <Icon className="w-3.5 h-3.5" />
+                                      {u.label}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between mb-1">
+                                <label className="text-xs text-muted-foreground">Цена vs рынок (% — отриц. = ниже рынка)</label>
+                                <span className="text-xs font-medium text-foreground tabular-nums">{scoringVals.price_vs_market_pct}</span>
+                              </div>
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={scoringVals.price_vs_market_pct}
+                                onChange={e => setScoringVals(s => ({ ...s, price_vs_market_pct: parseFloat(e.target.value) || 0 }))}
+                                className={inputCls}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground/70 text-right">Сохраняется автоматически</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* File attachments */}
+                <section id="attachments">
+                  <FileAttachments plotId={plot.id} initialFiles={files} />
+                </section>
+
+                {/* Checklists */}
+                {checklists.length > 0 && (
+                  <section>
+                    <ChecklistPanel checklists={checklists} userId={userId} />
+                  </section>
                 )}
               </div>
 
-              {/* File attachments */}
-              <FileAttachments plotId={plot.id} initialFiles={files} dark />
+              {/* Divider */}
+              <div className="hidden md:block shrink-0 w-px bg-border" />
+              <div className="md:hidden h-px mx-6 bg-border" />
 
-              {/* Checklists */}
-              {checklists.length > 0 && (
-                <ChecklistPanel checklists={checklists} userId={userId} />
-              )}
-            </div>{/* end left column */}
-
-            {/* ── Vertical divider ── */}
-            <div className="hidden md:block shrink-0 w-px" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
-            {/* Mobile horizontal divider */}
-            <div className="md:hidden h-px mx-5" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
-
-            {/* ── Right column: activity & comments ── */}
-            <div className="md:w-72 lg:w-80 shrink-0 flex flex-col md:overflow-hidden">
-              <ActivityPanel plotId={plot.id} userId={userId} sidebar />
+              {/* ── Right column: Comments & Activity ── */}
+              <aside className="md:w-[320px] shrink-0 flex flex-col md:overflow-hidden bg-[var(--list)]/40">
+                <ActivityPanel plotId={plot.id} userId={userId} sidebar />
+              </aside>
             </div>
-
-            </div>{/* end two-column body */}
           </>
         )}
       </div>
@@ -632,10 +657,41 @@ export function CardDrawer({ plotId, stages, userId, onClose, onPlotUpdate, onPl
   )
 }
 
+function ChipBtn({
+  icon: Icon,
+  onClick,
+  children,
+}: {
+  icon: typeof Archive
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] font-medium text-foreground/90 bg-white/[0.06] hover:bg-white/[0.12] transition-colors"
+    >
+      <Icon className="w-3.5 h-3.5 shrink-0" />
+      {children}
+    </button>
+  )
+}
+
+/** Pick black/white ink for a given hex bg so label text stays legible. */
+function readableInk(hex: string): string {
+  const h = hex.replace('#', '')
+  if (h.length !== 6) return '#fff'
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.6 ? '#1D2125' : '#fff'
+}
+
 function DField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs text-white/30 mb-1">{label}</label>
+      <label className="block text-xs text-muted-foreground mb-1">{label}</label>
       {children}
     </div>
   )
@@ -647,16 +703,16 @@ function DSlider({ label, value, onChange, min, max }: {
   return (
     <div>
       <div className="flex justify-between mb-1">
-        <label className="text-xs text-white/40">{label}</label>
-        <span className="text-xs font-medium text-white/70">{value}</span>
+        <label className="text-xs text-muted-foreground">{label}</label>
+        <span className="text-xs font-medium text-foreground tabular-nums">{value}</span>
       </div>
       <input
         type="range" min={min} max={max} value={value}
         onChange={e => onChange(parseInt(e.target.value))}
-        className="w-full accent-indigo-500"
+        className="w-full accent-primary"
       />
     </div>
   )
 }
 
-const inputCls = 'w-full rounded-lg px-3 py-1.5 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-indigo-500/60 bg-black/50 border border-white/8 focus:border-indigo-500/50'
+const inputCls = 'w-full rounded-lg px-3 py-1.5 text-sm text-foreground bg-card border border-border focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring placeholder:text-muted-foreground/50 transition-colors'

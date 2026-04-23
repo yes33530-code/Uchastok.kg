@@ -56,14 +56,14 @@ export function ScoringInputsForm({ plotId, initialValues, initialInfra }: Props
   }
 
   return (
-    <div className="rounded-xl p-5" style={{ backgroundColor: '#142a50', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <h3 className="text-sm font-semibold text-white/70 mb-4">Параметры оценки</h3>
+    <div className="rounded-md p-4 bg-[var(--list)]/60 border border-border">
+      <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-3">Параметры оценки</h3>
       <div className="space-y-4">
         {/* Infrastructure toggles */}
         <div>
           <div className="flex justify-between mb-2">
-            <label className="text-xs text-white/40">Инфраструктура</label>
-            <span className="text-xs font-medium text-white/70">
+            <label className="text-xs text-muted-foreground">Инфраструктура</label>
+            <span className="text-xs font-medium text-foreground/80">
               {Object.values(infra).filter(Boolean).length}/4
             </span>
           </div>
@@ -75,12 +75,11 @@ export function ScoringInputsForm({ plotId, initialValues, initialInfra }: Props
                   key={u.key}
                   type="button"
                   onClick={() => toggleInfra(u.key)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                  style={{
-                    backgroundColor: on ? 'rgba(99,102,241,0.25)' : 'rgba(0,0,0,0.35)',
-                    border: on ? '1px solid rgba(99,102,241,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                    color: on ? '#a5b4fc' : 'rgba(255,255,255,0.35)',
-                  }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                    on
+                      ? 'bg-primary/25 border-primary/60 text-primary'
+                      : 'bg-muted/60 border-border text-muted-foreground/60'
+                  }`}
                 >
                   <span>{u.icon}</span>
                   {u.label}
@@ -103,7 +102,7 @@ export function ScoringInputsForm({ plotId, initialValues, initialInfra }: Props
           min={0} max={100}
         />
         <div>
-          <label className="block text-xs text-white/40 mb-1">
+          <label className="block text-xs text-muted-foreground mb-1">
             Цена vs рынок (% — отрицательное = ниже рынка)
           </label>
           <input
@@ -111,14 +110,13 @@ export function ScoringInputsForm({ plotId, initialValues, initialInfra }: Props
             step="0.5"
             value={values.price_vs_market_pct}
             onChange={e => setValues(s => ({ ...s, price_vs_market_pct: parseFloat(e.target.value) || 0 }))}
-            className="w-full rounded-lg px-3 py-2 text-sm text-white/80 outline-none focus:ring-1 focus:ring-indigo-500/60 bg-black/40 focus:border-indigo-500/50"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+            className="w-full rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring/40 bg-muted/60 focus:border-ring border border-border"
           />
         </div>
         <button
           onClick={save}
           disabled={saving}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
         >
           {saving ? 'Сохранение...' : 'Сохранить оценку'}
         </button>
@@ -137,8 +135,8 @@ function SliderField({ label, value, onChange, min, max }: {
   return (
     <div>
       <div className="flex justify-between mb-1">
-        <label className="text-xs text-white/40">{label}</label>
-        <span className="text-xs font-medium text-white/70">{value}</span>
+        <label className="text-xs text-muted-foreground">{label}</label>
+        <span className="text-xs font-medium text-foreground/80">{value}</span>
       </div>
       <input
         type="range"
@@ -146,7 +144,7 @@ function SliderField({ label, value, onChange, min, max }: {
         max={max}
         value={value}
         onChange={e => onChange(parseInt(e.target.value))}
-        className="w-full accent-indigo-500"
+        className="w-full accent-primary"
       />
     </div>
   )

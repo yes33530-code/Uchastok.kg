@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core'
-import { Plus, GripVertical } from 'lucide-react'
+import { Plus, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { createPlot } from '@/actions/plots'
 import { renameStage } from '@/actions/stages'
@@ -137,16 +137,14 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
     <div
       ref={setColumnRef}
       style={columnStyle}
-      className="flex flex-col w-64 shrink-0 rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden"
+      className="group/col flex flex-col w-[272px] shrink-0 rounded-[12px] bg-[var(--list)] overflow-hidden max-h-full"
     >
-      {/* Header — drag handle for column */}
+      {/* Header — bare title + menu affordance */}
       <div
-        className="flex items-center gap-1.5 px-2 py-2 border-b border-border bg-muted/40 cursor-grab active:cursor-grabbing"
-        style={{ borderTop: `3px solid ${stage.color}` }}
+        className="flex items-center gap-2 px-3 pt-2.5 pb-2 cursor-grab active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
         {editingName ? (
           <input
             ref={nameRef}
@@ -157,31 +155,34 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
               if (e.key === 'Enter') commitRename()
               if (e.key === 'Escape') { setNameValue(stage.name); setEditingName(false) }
             }}
-            // Stop drag listeners from firing while editing text
             onPointerDown={e => e.stopPropagation()}
-            className="flex-1 text-sm font-semibold text-foreground bg-transparent outline-none border-b border-border min-w-0"
+            className="flex-1 text-[14px] font-semibold text-foreground bg-transparent outline-none border-b border-border min-w-0"
           />
         ) : (
           <span
-            className="flex-1 text-sm font-semibold text-foreground truncate"
+            className="flex-1 text-[14px] font-semibold text-foreground truncate"
             onDoubleClick={e => { e.stopPropagation(); setEditingName(true) }}
             title="Двойной клик для переименования"
           >
             {nameValue}
           </span>
         )}
-        <span
-          className="text-xs font-semibold rounded-full px-1.5 py-0.5 text-white shrink-0 tabular-nums"
-          style={{ backgroundColor: stage.color }}
+        <button
+          type="button"
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation() }}
+          className="shrink-0 p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-white/[0.06] transition-colors"
+          aria-label="Меню списка"
+          title={`${plots.length} карточек`}
         >
-          {plots.length}
-        </span>
+          <MoreHorizontal className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Cards body — separate droppable */}
       <div
         ref={setDropRef}
-        className="flex-1 px-1.5 pt-1.5 pb-1.5 space-y-1.5 min-h-[3rem] transition-colors"
+        className="flex-1 min-h-[3rem] overflow-y-auto px-2 pb-1.5 space-y-2 transition-colors"
         style={
           showDropHighlight
             ? { backgroundColor: `${stage.color}14`, boxShadow: `inset 0 0 0 1px ${stage.color}40` }
@@ -200,22 +201,26 @@ export function KanbanColumn({ stage, plots, onOpenCard, activeType, fileCounts,
         </SortableContext>
 
         {plots.length === 0 && showDropHighlight && (
-          <div className="h-14 rounded-lg border-2 border-dashed opacity-40" style={{ borderColor: stage.color }} />
+          <div className="h-14 rounded-md border-2 border-dashed opacity-40" style={{ borderColor: stage.color }} />
         )}
-
-        {/* Inline add */}
-        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-muted/50 border border-transparent focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 transition-colors">
-          <Plus className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Добавить карточку…"
-            className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-none"
-          />
-        </div>
       </div>
+
+      {/* Inline add — sticky footer, Trello-style "+ Add a card" */}
+      <button
+        type="button"
+        onClick={() => inputRef.current?.focus()}
+        className="group/add mx-2 mb-2 mt-0 flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[13px] text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5 shrink-0" />
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder="Добавить карточку…"
+          className="flex-1 bg-transparent text-[13px] placeholder:text-muted-foreground outline-none group-hover/add:placeholder:text-foreground"
+        />
+      </button>
     </div>
   )
 }

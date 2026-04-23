@@ -56,7 +56,6 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white/80 mb-4">Пользователи</h3>
 
       {/* Pending approval */}
       {pending.length > 0 && (
@@ -84,7 +83,7 @@ export function UserManagement({ profiles, currentUserId }: { profiles: Profile[
       {approved.length > 0 && (
         <div>
           {pending.length > 0 && (
-            <p className="text-xs font-medium text-white/30 uppercase tracking-wide mb-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
               Активные ({approved.length})
             </p>
           )}
@@ -125,8 +124,7 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
 
   return (
     <div
-      className="flex items-center gap-3 py-2.5 px-3 rounded-lg"
-      style={{ backgroundColor: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}
+      className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-muted/60 border border-border/60"
     >
       {profile.avatar_url ? (
         <img src={profile.avatar_url} alt={profile.full_name ?? ''} className="w-8 h-8 rounded-full shrink-0 object-cover" />
@@ -140,11 +138,11 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
       )}
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-white/80 font-medium truncate">
+        <p className="text-sm text-foreground font-medium truncate">
           {profile.full_name ?? 'Пользователь'}
-          {isMe && <span className="ml-2 text-xs text-white/30">(вы)</span>}
+          {isMe && <span className="ml-2 text-xs text-muted-foreground">(вы)</span>}
         </p>
-        <p className="text-xs text-white/30">с {formatDate(profile.created_at)}</p>
+        <p className="text-xs text-muted-foreground">с {formatDate(profile.created_at)}</p>
       </div>
 
       <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
@@ -163,19 +161,18 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
         {/* 3-way role selector (approved users only) */}
         {profile.approved && onSetRole && (
           loading === profile.id + '_role' ? (
-            <span className="text-xs text-white/30">...</span>
+            <span className="text-xs text-muted-foreground">...</span>
           ) : (
-            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex rounded-lg overflow-hidden border border-border">
               {ROLES.map(({ value, label }) => (
                 <button
                   key={value}
                   onClick={() => onSetRole(value)}
-                  className="text-xs px-2 py-1 transition-colors"
-                  style={{
-                    backgroundColor: profile.role === value ? 'rgba(99,102,241,0.35)' : 'rgba(0,0,0,0.2)',
-                    color: profile.role === value ? '#a5b4fc' : 'rgba(255,255,255,0.35)',
-                    fontWeight: profile.role === value ? 600 : 400,
-                  }}
+                  className={`text-xs px-2 py-1 transition-colors ${
+                    profile.role === value
+                      ? 'bg-primary/35 text-primary font-semibold'
+                      : 'bg-muted/60 text-muted-foreground/80'
+                  }`}
                 >
                   {label}
                 </button>
@@ -187,11 +184,11 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
         {/* Role badge for own row (can't change own role) */}
         {profile.approved && isMe && (
           <span
-            className="text-xs font-medium px-2 py-0.5 rounded-full"
-            style={{
-              backgroundColor: profile.role === 'admin' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-              color: profile.role === 'admin' ? '#a5b4fc' : 'rgba(255,255,255,0.4)',
-            }}
+            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+              profile.role === 'admin'
+                ? 'bg-primary/20 text-primary'
+                : 'bg-muted/60 text-muted-foreground'
+            }`}
           >
             {ROLES.find(r => r.value === profile.role)?.label ?? profile.role}
           </span>
@@ -202,7 +199,7 @@ function UserRow({ profile, isMe, loading, onApprove, onRevoke, onSetRole }: {
           <button
             onClick={onRevoke}
             disabled={loading === profile.id + '_revoke'}
-            className="text-xs text-red-400/50 hover:text-red-400 underline disabled:opacity-40 transition-colors"
+            className="text-xs text-destructive/60 hover:text-destructive underline disabled:opacity-40 transition-colors"
           >
             {loading === profile.id + '_revoke' ? '...' : 'Отозвать'}
           </button>

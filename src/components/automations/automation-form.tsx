@@ -44,19 +44,18 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-white/80">Автоматизации</h3>
+      <div className="flex items-center justify-end mb-3">
         <button
           onClick={() => setCreating(c => !c)}
-          className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-[13px] text-primary hover:text-primary/80 font-medium transition-colors"
         >
-          <Plus className="w-4 h-4" /> Новая
+          <Plus className="w-3.5 h-3.5" /> Новая
         </button>
       </div>
 
       {creating && (
-        <form onSubmit={submit} className="rounded-xl p-4 mb-5 space-y-4" style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <h4 className="text-sm font-medium text-white/70">Новое правило</h4>
+        <form onSubmit={submit} className="rounded-xl p-4 mb-5 space-y-4 bg-muted/60 border border-border">
+          <h4 className="text-sm font-medium text-foreground/80">Новое правило</h4>
           <input
             placeholder="Название правила"
             value={form.name}
@@ -64,7 +63,7 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
             className={inputCls}
           />
           <div>
-            <label className="block text-xs text-white/40 mb-1">Когда участок переходит в стадию</label>
+            <label className="block text-xs text-muted-foreground mb-1">Когда участок переходит в стадию</label>
             <select
               value={form.trigger_stage_id}
               onChange={e => setForm(s => ({ ...s, trigger_stage_id: e.target.value }))}
@@ -81,7 +80,7 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
             className={inputCls}
           />
           <div className="space-y-2">
-            <label className="block text-xs text-white/40">Пункты чек-листа</label>
+            <label className="block text-xs text-muted-foreground">Пункты чек-листа</label>
             {form.items.map((item, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input
@@ -94,7 +93,7 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
                   })}
                   className={`${inputCls} flex-1`}
                 />
-                <label className="flex items-center gap-1 text-xs text-white/40 shrink-0 cursor-pointer">
+                <label className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={item.required}
@@ -103,13 +102,13 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
                       items[i] = { ...items[i], required: e.target.checked }
                       return { ...s, items }
                     })}
-                    className="w-3 h-3 accent-indigo-500"
+                    className="w-3 h-3 accent-primary"
                   />
                   Обязательно
                 </label>
                 {form.items.length > 1 && (
                   <button type="button" onClick={() => setForm(s => ({ ...s, items: s.items.filter((_, idx) => idx !== i) }))}>
-                    <Trash2 className="w-4 h-4 text-white/30 hover:text-red-400 transition-colors" />
+                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
                   </button>
                 )}
               </div>
@@ -117,20 +116,19 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
             <button
               type="button"
               onClick={() => setForm(s => ({ ...s, items: [...s.items, { label: '', required: false }] }))}
-              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="text-xs text-primary hover:text-primary/80 transition-colors"
             >
               + Добавить пункт
             </button>
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-500 transition-colors">
+            <button type="submit" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
               Создать
             </button>
             <button
               type="button"
               onClick={() => setCreating(false)}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
-              style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted/50 transition-colors border border-border"
             >
               Отмена
             </button>
@@ -140,15 +138,15 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
 
       <div className="space-y-2">
         {rules.length === 0 && !creating && (
-          <p className="text-sm text-white/30 text-center py-6">Нет автоматизаций. Создайте первую!</p>
+          <p className="text-sm text-muted-foreground text-center py-6">Нет автоматизаций. Создайте первую!</p>
         )}
         {rules.map(rule => {
           const stage = stages.find(s => s.id === rule.trigger_stage_id)
           return (
-            <div key={rule.id} className="flex items-center justify-between rounded-lg px-4 py-3 transition-colors hover:bg-white/3" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div key={rule.id} className="flex items-center justify-between rounded-lg px-4 py-3 transition-colors hover:bg-muted/40 border border-border/60">
               <div>
-                <p className="text-sm font-medium text-white/80">{rule.name}</p>
-                <p className="text-xs text-white/40">→ {stage?.name ?? 'Стадия удалена'}</p>
+                <p className="text-sm font-medium text-foreground">{rule.name}</p>
+                <p className="text-xs text-muted-foreground">→ {stage?.name ?? 'Стадия удалена'}</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -159,7 +157,7 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
                   className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
                     rule.enabled
                       ? 'bg-emerald-500/15 text-emerald-400'
-                      : 'bg-white/8 text-white/40'
+                      : 'bg-muted/60 text-muted-foreground'
                   }`}
                 >
                   {rule.enabled ? 'Активно' : 'Выкл'}
@@ -170,7 +168,7 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
                     setRules(r => r.filter(x => x.id !== rule.id))
                     toast.success('Удалено')
                   }}
-                  className="text-white/20 hover:text-red-400 transition-colors"
+                  className="text-muted-foreground/60 hover:text-destructive transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -183,5 +181,5 @@ export function AutomationManager({ stages, rules: initialRules }: Props) {
   )
 }
 
-const inputCls = 'w-full rounded-lg px-3 py-2 text-sm text-white/80 outline-none focus:ring-1 focus:ring-indigo-500/60 bg-black/40 placeholder-white/25 focus:border-indigo-500/50 [&>option]:bg-[#112545]'
-  + ' ' + 'border border-white/8'
+const inputCls = 'w-full rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring/40 bg-muted/60 placeholder:text-muted-foreground/60 focus:border-ring [&>option]:bg-popover [&>option]:text-foreground'
+  + ' ' + 'border border-border'
