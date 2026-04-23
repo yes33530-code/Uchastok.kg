@@ -251,10 +251,13 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
   if (!mounted) return (
     <div className="flex gap-4 h-full overflow-x-auto pb-4">
       {stageList.map(stage => (
-        <div key={stage.id} className="w-64 shrink-0 rounded-xl" style={{ backgroundColor: '#0f1a2e', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center justify-between px-3 py-2.5 rounded-t-xl" style={{ borderTop: `3px solid ${stage.color}`, backgroundColor: 'rgba(0,0,0,0.4)' }}>
-            <span className="text-sm font-semibold text-white/90">{stage.name}</span>
-            <span className="text-xs rounded-full px-1.5 py-0.5 text-white" style={{ backgroundColor: stage.color }}>0</span>
+        <div key={stage.id} className="w-64 shrink-0 rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
+          <div
+            className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/40"
+            style={{ borderTop: `3px solid ${stage.color}` }}
+          >
+            <span className="text-sm font-semibold text-foreground">{stage.name}</span>
+            <span className="text-xs font-medium rounded-full px-1.5 py-0.5 text-white tabular-nums" style={{ backgroundColor: stage.color }}>0</span>
           </div>
         </div>
       ))}
@@ -289,20 +292,27 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
             {/* Add column */}
             <div className="shrink-0 w-64">
               {addingStage ? (
-                <div className="rounded-xl p-3 space-y-2" style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="rounded-xl p-3 space-y-2 bg-card ring-1 ring-foreground/10">
                   <input
                     autoFocus
                     value={newStageName}
                     onChange={e => setNewStageName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleCreateStage(); if (e.key === 'Escape') setAddingStage(false) }}
                     placeholder="Название колонки..."
-                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/30 outline-none focus:border-white/25"
+                    className="w-full bg-muted/50 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleCreateStage} disabled={addingStageLoading} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                      {addingStageLoading ? '...' : 'Добавить'}
+                    <button
+                      onClick={handleCreateStage}
+                      disabled={addingStageLoading}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {addingStageLoading ? '…' : 'Добавить'}
                     </button>
-                    <button onClick={() => { setAddingStage(false); setNewStageName('') }} className="px-3 text-white/40 hover:text-white/70 text-xs rounded-lg hover:bg-white/5 transition-colors">
+                    <button
+                      onClick={() => { setAddingStage(false); setNewStageName('') }}
+                      className="px-3 text-muted-foreground hover:text-foreground text-xs rounded-lg hover:bg-muted transition-colors"
+                    >
                       Отмена
                     </button>
                   </div>
@@ -310,8 +320,7 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
               ) : (
                 <button
                   onClick={() => setAddingStage(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-white/50 hover:text-white/80 transition-colors"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-muted bg-card/60 ring-1 ring-border transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Добавить колонку
@@ -324,9 +333,12 @@ export function KanbanBoard({ stages, initialPlots, userId, fileCounts }: BoardP
         <DragOverlay>
           {activePlot && <KanbanCard plot={activePlot} isDragging fileCounts={fileCounts} />}
           {activeStage && (
-            <div className="w-64 rounded-xl opacity-90 shadow-2xl" style={{ backgroundColor: '#0f1a2e', border: '1px solid rgba(255,255,255,0.15)' }}>
-              <div className="flex items-center justify-between px-3 py-2.5 rounded-t-xl" style={{ borderTop: `3px solid ${activeStage.color}`, backgroundColor: 'rgba(0,0,0,0.4)' }}>
-                <span className="text-sm font-semibold text-white">{activeStage.name}</span>
+            <div className="w-64 rounded-xl opacity-95 shadow-2xl bg-card ring-1 ring-foreground/15">
+              <div
+                className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/40"
+                style={{ borderTop: `3px solid ${activeStage.color}` }}
+              >
+                <span className="text-sm font-semibold text-foreground">{activeStage.name}</span>
               </div>
             </div>
           )}

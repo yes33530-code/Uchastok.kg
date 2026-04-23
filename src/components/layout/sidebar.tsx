@@ -41,6 +41,7 @@ export function Sidebar() {
       if (data) setProfile(data)
     }
     loadProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function signOut() {
@@ -51,14 +52,17 @@ export function Sidebar() {
   return (
     <>
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 bg-[#142a50] flex-col z-40">
+      <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 bg-card border-r border-border flex-col z-40">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-white/10">
-          <span className="text-white font-bold text-lg tracking-tight">Uchastok.kg</span>
-        </div>
+        <Link href="/dashboard" className="px-4 py-4 border-b border-border flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">У</span>
+          <span className="font-semibold text-[15px] tracking-tight text-foreground">
+            Uchastok<span className="text-primary">.kg</span>
+          </span>
+        </Link>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
@@ -66,8 +70,10 @@ export function Sidebar() {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                  active ? 'bg-white/15 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  active
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -77,33 +83,35 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Public listing link + Sign out */}
-        <div className="px-3 pb-4 space-y-0.5">
-          {/* Current user */}
+        {/* Footer: profile + public link + sign out */}
+        <div className="px-2.5 pb-3 space-y-0.5">
           {profile && (
-            <div className="flex items-center gap-2.5 px-3 py-2.5 mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-2.5 px-3 py-2 mb-1 border-b border-border pb-3">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt={profile.full_name ?? ''} className="w-7 h-7 rounded-full shrink-0 object-cover" />
               ) : (
-                <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
+                <div
+                  className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-primary-foreground"
+                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+                >
                   {(profile.full_name ?? '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
                 </div>
               )}
-              <span className="text-sm text-white/70 truncate">{profile.full_name ?? 'Пользователь'}</span>
+              <span className="text-sm text-foreground truncate font-medium">{profile.full_name ?? 'Пользователь'}</span>
             </div>
           )}
           <a
             href="/listings"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <Globe className="w-4 h-4 shrink-0" />
             Публичный сайт ↗
           </a>
           <button
             onClick={signOut}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Выйти
@@ -112,10 +120,7 @@ export function Sidebar() {
       </aside>
 
       {/* ── Mobile bottom navigation ── */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-1 safe-area-bottom"
-        style={{ backgroundColor: '#142a50', borderTop: '1px solid rgba(255,255,255,0.08)' }}
-      >
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-1 bg-card border-t border-border safe-area-bottom">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -124,10 +129,10 @@ export function Sidebar() {
               href={href}
               className={cn(
                 'flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg transition-colors min-w-0',
-                active ? 'text-white' : 'text-white/40'
+                active ? 'text-primary' : 'text-muted-foreground'
               )}
             >
-              <Icon className={cn('w-5 h-5 shrink-0', active && 'text-indigo-400')} />
+              <Icon className="w-5 h-5 shrink-0" />
               <span className="text-[9px] font-medium truncate">{label}</span>
             </Link>
           )
@@ -136,14 +141,14 @@ export function Sidebar() {
           href="/listings"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-white/40 transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-muted-foreground transition-colors"
         >
           <Globe className="w-5 h-5 shrink-0" />
           <span className="text-[9px] font-medium">Сайт</span>
         </a>
         <button
           onClick={signOut}
-          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-white/40 transition-colors"
+          className="flex flex-col items-center gap-0.5 px-2 py-2.5 rounded-lg text-muted-foreground transition-colors"
         >
           <LogOut className="w-5 h-5 shrink-0" />
           <span className="text-[9px] font-medium">Выйти</span>
