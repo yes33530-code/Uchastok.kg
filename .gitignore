@@ -40,3 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 supabase psw.txt
+
+# claude code
+.claude/settings.local.json
+
+# vendored design-intelligence reference (not project code)
+/ui-ux-pro-max-skill-main/
