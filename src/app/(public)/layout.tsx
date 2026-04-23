@@ -45,7 +45,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">У</span>
-              <span className="font-semibold text-foreground">Uchastok<span className="text-primary">.kg</span></span>
+              <span className="font-semibold text-foreground">Участок<span className="text-primary">.kg</span></span>
             </div>
             <p className="text-muted-foreground leading-relaxed">
               Проверенные земельные участки в Кыргызстане. Юридическая чистота и прозрачная инфраструктура.

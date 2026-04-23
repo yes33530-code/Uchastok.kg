@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Zap, Droplets, Flame, Waves, Check, X, SlidersHorizontal } from 'lucide-react'
+import { Zap, Droplets, Flame, Waves, Check, X } from 'lucide-react'
 import { Toggle } from '@/components/ui/toggle'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { ListingRow, type ListingPlot } from './ListingRow'
 
 const ZONES = [
@@ -16,10 +15,10 @@ const ZONES = [
 ] as const
 
 const INFRA_FILTERS = [
-  { key: 'infra_electricity' as const, icon: Zap,      label: 'Электричество' },
+  { key: 'infra_electricity' as const, icon: Zap,      label: 'Свет' },
   { key: 'infra_water'       as const, icon: Droplets, label: 'Вода' },
   { key: 'infra_gas'         as const, icon: Flame,    label: 'Газ' },
-  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канализация' },
+  { key: 'infra_sewer'       as const, icon: Waves,    label: 'Канал.' },
 ]
 
 export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
@@ -51,33 +50,12 @@ export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
     setInfraReq(new Set())
   }
 
-  const filterPanel = (
-    <div className="rounded-2xl border border-border bg-card ring-1 ring-foreground/5 p-5 space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-          <SlidersHorizontal className="size-4 text-muted-foreground" />
-          Фильтры
-        </div>
-        {activeFilters > 0 && (
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="size-3" />
-            Сбросить ({activeFilters})
-          </button>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Zone */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
-          Зонирование
-        </p>
-        <div className="flex flex-wrap gap-1.5">
+  return (
+    <div className="space-y-3">
+      {/* Thin filter bar */}
+      <div className="rounded-lg bg-card ring-1 ring-foreground/10 px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* Zone */}
+        <div className="flex flex-wrap gap-1">
           {ZONES.map(z => {
             const active = zone === z.value
             return (
@@ -97,15 +75,10 @@ export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
             )
           })}
         </div>
-      </div>
 
-      <Separator />
+        <span className="h-5 w-px bg-border" />
 
-      {/* Legal */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
-          Документы
-        </p>
+        {/* Legal */}
         <Toggle
           size="sm"
           pressed={legalOnly}
@@ -117,16 +90,11 @@ export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
           <Check className="size-3.5" />
           Красная книга
         </Toggle>
-      </div>
 
-      <Separator />
+        <span className="h-5 w-px bg-border" />
 
-      {/* Infra */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
-          Инфраструктура
-        </p>
-        <div className="flex flex-wrap gap-1.5">
+        {/* Infra */}
+        <div className="flex flex-wrap gap-1">
           {INFRA_FILTERS.map(({ key, icon: Icon, label }) => {
             const active = infraReq.has(key)
             return (
@@ -145,40 +113,38 @@ export function ListingsClient({ plots }: { plots: ListingPlot[] }) {
             )
           })}
         </div>
-      </div>
-    </div>
-  )
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 lg:gap-8 items-start">
-      {/* Results column */}
-      <div className="min-w-0 lg:order-1 order-2">
-        <div className="mb-4 flex items-baseline justify-between">
-          <p className="text-sm text-muted-foreground">
-            {filtered.length === plots.length
-              ? `Показаны все ${plots.length}`
-              : `Найдено: ${filtered.length} из ${plots.length}`}
-          </p>
+        {/* Count + reset on the right */}
+        <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="tabular-nums">
+            {filtered.length === plots.length ? plots.length : `${filtered.length} / ${plots.length}`}
+          </span>
+          {activeFilters > 0 && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-1 font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="size-3" />
+              Сбросить
+            </button>
+          )}
         </div>
-
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card ring-1 ring-foreground/5 text-center py-16 px-6">
-            <p className="font-medium text-foreground">Нет записей по выбранным фильтрам</p>
-            <Button variant="link" onClick={resetFilters} className="mt-2">
-              Сбросить фильтры
-            </Button>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {filtered.map(plot => <ListingRow key={plot.id} plot={plot} />)}
-          </ul>
-        )}
       </div>
 
-      {/* Filter sidebar — right on desktop, top on mobile */}
-      <aside className="lg:order-2 order-1 lg:sticky lg:top-24">
-        {filterPanel}
-      </aside>
+      {/* List */}
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card ring-1 ring-foreground/5 text-center py-12 px-6">
+          <p className="font-medium text-foreground">Нет записей по выбранным фильтрам</p>
+          <Button variant="link" onClick={resetFilters} className="mt-1">
+            Сбросить фильтры
+          </Button>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {filtered.map(plot => <ListingRow key={plot.id} plot={plot} />)}
+        </ul>
+      )}
     </div>
   )
 }
